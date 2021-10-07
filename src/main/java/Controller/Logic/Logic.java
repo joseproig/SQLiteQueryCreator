@@ -50,6 +50,7 @@ public class Logic {
             }
             graph.insertarTaula(taula.getId(),fksTableId);
         }
+        graph.convertirEnBidireccional();
 
         return graph;
     }
