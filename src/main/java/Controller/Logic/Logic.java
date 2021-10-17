@@ -1,10 +1,7 @@
 package Controller.Logic;
 
 import Controller.DBLogic.DBConnection;
-import Model.Columna;
-import Model.DynamicMatrix;
-import Model.ProgramConfig;
-import Model.Taula;
+import Model.*;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -32,26 +29,35 @@ public class Logic {
         return null;
     }
 
-    public DynamicMatrix initializeGraph (HashMap <String, Taula> taules) {
+    public DynamicMatrix initializeGraphAndListOfConnections (HashMap <String, Taula> taules, MatrixOfConnections matrixOfConnections) {
         Iterator<String> it = taules.keySet().iterator();
         DynamicMatrix graph = new DynamicMatrix(taules.size());
+
+
+        matrixOfConnections.initializeListOfConnections(taules.size());
 
         while(it.hasNext()){
             String nomTaula = it.next();
             Taula taula = taules.get(nomTaula);
             List<Columna> fks = taula.getForeignKeys();
-            int [] fksTableId = new int[fks.size()];
 
+
+            //Copiem a la llista tots els ids de les taules a les que fa referencia
             int i = 0;
             while (i < fks.size()) {
                 String tableRef = fks.get(i).getTableReference();
-                fksTableId[i] = taules.get(tableRef).getId();
+                matrixOfConnections.setNewRelation(taula.getId(),taules.get(tableRef).getId());
                 i++;
             }
-            graph.insertarTaula(taula.getId(),fksTableId);
-        }
-        graph.convertirEnBidireccional();
 
+            //Creem les relacions de les FK al graph original
+            graph.insertarTaula(taula.getId(),matrixOfConnections.getRelationsOfATable(taula.getId()));
+
+        }
+
+        //Convertim el graph creat en bidireccional (de tal forma que una relació de FK, es convertirà en bidireccional)
+        graph.convertirEnBidireccional();
+        matrixOfConnections.makeItBidirectional();
         return graph;
     }
 }
