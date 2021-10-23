@@ -1,5 +1,6 @@
 package Utils.Algorithms;
 
+import Model.BestPathsMatrix;
 import Model.DynamicMatrix;
 
 import java.util.ArrayList;
@@ -14,11 +15,13 @@ public class FloydWarshall {
         this.numOfTables = numOfTables;
     }
 
-    public short [][] floydWarshall(DynamicMatrix dynamicMatrix) {
+    public short [][] floydWarshall(DynamicMatrix dynamicMatrix, BestPathsMatrix bestPathsMatrix) {
         short dist[][] = new short[numOfTables][numOfTables];
         short i, j, k, w;
 
         List<Short> directCommunicationsTable = new ArrayList<>();
+
+
 
         short firstIteration = 0;
 
@@ -39,8 +42,11 @@ public class FloydWarshall {
                 for (j = 0; j < shorts.length; j++) {
                     Short shorts_j = shorts[j];
                     if (shorts_j != null) {
-                        dist[i][shorts_j] = directCommunicationsTable.get(shorts_j);
-                        dist[shorts_j][i] = directCommunicationsTable.get(i);
+                        short directlyConnectionsJ = directCommunicationsTable.get(shorts_j);
+                        short directlyConnectionsI = directCommunicationsTable.get(i);
+                        dist[i][shorts_j] = (short) (directlyConnectionsJ + directlyConnectionsI);
+                        dist[shorts_j][i] = (short) (directlyConnectionsJ + directlyConnectionsI);
+                        bestPathsMatrix.setArrayValuesBidirectional(i,shorts_j,shorts,dynamicMatrix.retornaTaulesVinculadesAUnaTaula(shorts_j));
                     }
                 }
             }
@@ -53,7 +59,7 @@ public class FloydWarshall {
                     if ((dist[i][k] + dist[k][j] > dist[i][j]) && i != j && (k != j && k != i) && dist[i][j] <= 0) {
                         short result = (short) (dist[i][k] + dist[k][j]);
                         if (result > 0) {
-                            dist[i][j] = (short) (result - 1);
+                            dist[i][j] = (short) bestPathsMatrix.setArrayValuesWithBasicShortAndObjectShort(i,j,bestPathsMatrix.getVinculationsOfTable(k,j),bestPathsMatrix.getVinculationsOfTable(i,k));
                         } else {
                             dist[i][j] = INF;
                         }

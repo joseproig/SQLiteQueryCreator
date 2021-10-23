@@ -1,3 +1,6 @@
 {
-  "dbPath": "/Users/joseproigtorres/Desktop/CinqueAny/TFG/Dades/2021_LAB3_DB.db"
+  "dbPath": "/Users/joseproigtorres/Desktop/CinqueAny/TFG/Dades/2021_LAB3_DB.db",
+  "filterParams": {
+    "minNumTables": 5
+  }
 }
