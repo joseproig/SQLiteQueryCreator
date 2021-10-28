@@ -5,6 +5,7 @@ import Model.ProgramConfig;
 import Model.TablesData;
 import Model.Taula;
 import Utils.ArrayUtils;
+import Utils.ByteTreatment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,33 +17,30 @@ import java.util.stream.IntStream;
 public class SubMatrixTreatment extends Thread{
     MatrixOfConnections submatrixOfConnections;
     short [] listOfSubmatrix;
+    HashMap<Long, List<Integer>> resultat;
 
     public SubMatrixTreatment (MatrixOfConnections submatrixOfConnections, short [] listOfSubmatrix) {
         this.submatrixOfConnections = submatrixOfConnections;
         this.listOfSubmatrix = listOfSubmatrix;
+        this.resultat = new HashMap<>();
     }
 
     @Override
     public void run() {
-        List<List<Integer>> nodesConsultats = new ArrayList<>();
-        int j = 0;
-        List<List <Integer>> resultat = new ArrayList<>();
         for (int i = 0; i < submatrixOfConnections.getListOfConnections().size();i++) {
             short shortValue = ((short)i);
-            //TODO: Cambiar este asList, si conve crear una funció utils
             if (ArrayUtils.shortArrayContains(listOfSubmatrix,shortValue)) {
+                List<List<Integer>> nodesConsultats = new ArrayList<>();
                 nodesConsultats.add(new ArrayList<>());
-                nodesConsultats.get(j++).add(i);
+                nodesConsultats.get(0).add(i);
                 ArrayList<Integer> integers = new ArrayList<>();
                 integers.add(i);
-                backtracking(integers, nodesConsultats.size() - 1 , nodesConsultats,resultat);
-                System.out.println("BU");
+                backtracking(integers, 0 , nodesConsultats,resultat);
             }
         }
-        System.out.println("BU");
     }
 
-    public void backtracking (List<Integer> nodesActual, Integer llistaAPlenar, List<List<Integer>> nodesConsultats,List<List <Integer>> resultat) {
+    public void backtracking (List<Integer> nodesActual, Integer llistaAPlenar, List<List<Integer>> nodesConsultats,HashMap<Long, List<Integer>> resultat) {
         //if (ProgramConfig.getInstance().getFilterParams().getMinNumTables() > nodesConsultats.get(llistaAPlenar).size()) {
             int numPossibilities = 0;
             List<Integer> tableOptions = new ArrayList<>();
@@ -59,7 +57,9 @@ public class SubMatrixTreatment extends Thread{
 
 
             if (numPossibilities == 0) {
-                resultat.add(nodesConsultats.get(llistaAPlenar));
+                if (ProgramConfig.getInstance().getFilterParams().getMinNumTables() <= nodesConsultats.get(llistaAPlenar).size()) {
+                    resultat.put(ByteTreatment.convertListIntegerToLong(nodesConsultats.get(llistaAPlenar)), nodesConsultats.get(llistaAPlenar));
+                }
                 return ;
             }
             for (int i = 1; i < possibilities; i++) {
@@ -78,10 +78,29 @@ public class SubMatrixTreatment extends Thread{
 
                 llistaAPlenar = nodesConsultats.size() - 1;
             }
+    }
 
-            System.out.println("Bu");
+    public MatrixOfConnections getSubmatrixOfConnections() {
+        return submatrixOfConnections;
+    }
 
+    public void setSubmatrixOfConnections(MatrixOfConnections submatrixOfConnections) {
+        this.submatrixOfConnections = submatrixOfConnections;
+    }
 
+    public short[] getListOfSubmatrix() {
+        return listOfSubmatrix;
+    }
 
+    public void setListOfSubmatrix(short[] listOfSubmatrix) {
+        this.listOfSubmatrix = listOfSubmatrix;
+    }
+
+    public HashMap<Long, List<Integer>> getResultat() {
+        return resultat;
+    }
+
+    public void setResultat(HashMap<Long, List<Integer>> resultat) {
+        this.resultat = resultat;
     }
 }
