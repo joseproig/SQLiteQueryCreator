@@ -9,6 +9,7 @@ public final class TablesData {
     private short [][] dist;
     private BestPathsMatrix bestPathsMatrix;
     private HashMap <Long, short[]> caminsFiltrats;
+    HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
 
     private TablesData() {}
 
@@ -61,5 +62,14 @@ public final class TablesData {
 
     public void setCaminsFiltrats(HashMap<Long, short[]> caminsFiltrats) {
         this.caminsFiltrats = caminsFiltrats;
+    }
+
+
+    public HashMap<Long, ResultOfFiltering> getCaminsPossiblesSolucions() {
+        return caminsPossiblesSolucions;
+    }
+
+    public void setCaminsPossiblesSolucions(HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions) {
+        this.caminsPossiblesSolucions = caminsPossiblesSolucions;
     }
 }

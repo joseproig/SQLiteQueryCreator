@@ -1,5 +1,6 @@
 package Controller.Logic;
 
+import Model.ResultOfFiltering;
 import Model.TablesData;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class SeePathsState extends State{
     @Override
     void doYourFunction(String string) throws IOException {
         List <SubMatrixTreatment> subMatrixTreatments = new ArrayList<>();
-        HashMap<Long, List<Integer>> resultat = new HashMap<>();
+        HashMap<Long, ResultOfFiltering> resultat = new HashMap<>();
         for (Long clave: TablesData.getInstance().getCaminsFiltrats().keySet()) {
             short [] value = TablesData.getInstance().getCaminsFiltrats().get(clave);
             SubMatrixTreatment subMatrixTreatment = new SubMatrixTreatment(TablesData.getInstance().getMatrixOfDirectlyConnections(), value);
@@ -26,5 +27,7 @@ public class SeePathsState extends State{
                 e.printStackTrace();
             }
         }
+        context.changeState(new MakeQueryState());
+        context.doStateFunction(null);
     }
 }
