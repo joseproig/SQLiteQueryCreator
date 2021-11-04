@@ -11,6 +11,8 @@ import java.util.List;
 public class SeePathsState extends State{
     @Override
     void doYourFunction(String string) throws IOException {
+        //TODO: Bucles entre taules
+
         List <SubMatrixTreatment> subMatrixTreatments = new ArrayList<>();
         HashMap<Long, ResultOfFiltering> resultat = new HashMap<>();
         for (Long clave: TablesData.getInstance().getCaminsFiltrats().keySet()) {
@@ -27,6 +29,7 @@ public class SeePathsState extends State{
                 e.printStackTrace();
             }
         }
+        TablesData.getInstance().setCaminsPossiblesSolucions(resultat);
         context.changeState(new MakeQueryState());
         context.doStateFunction(null);
     }

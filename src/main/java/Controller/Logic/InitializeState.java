@@ -16,13 +16,13 @@ import java.util.List;
 
 public class InitializeState extends State {
     public static final String JSON_PATH = "src/fileUtils/config.json";
-    private HashMap <String, Taula> getTaules () {
+    private HashMap <String, Taula> getTaules (HashMap<Integer,Taula> taulesById) {
         try {
             Gson gson = new Gson();
             BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
             ProgramConfig programConfig = gson.fromJson(br, ProgramConfig.class);
             ProgramConfig.setInstance(programConfig);
-            HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables();
+            HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
 
             return taules;
         } catch (FileNotFoundException e) {
@@ -79,7 +79,8 @@ public class InitializeState extends State {
          * - matrixOfPaths: Que serà una matriu que mostrarà el camí màxim obtingut
          */
 
-        HashMap<String, Taula> taules = getTaules();
+        HashMap<Integer,Taula> taulesById = new HashMap<>();
+        HashMap<String, Taula> taules = getTaules(taulesById);
         MatrixOfConnections matrixOfDirectlyConnections = new MatrixOfConnections();
         DynamicMatrix connectionsBetweenTables = initializeGraphAndListOfConnections(taules,matrixOfDirectlyConnections);
 
@@ -90,6 +91,7 @@ public class InitializeState extends State {
         TablesData.getInstance().setBestPathsMatrix(bestPathsMatrix);
         TablesData.getInstance().setDist(dist);
         TablesData.getInstance().setTaules(taules);
+        TablesData.getInstance().setTaulesById(taulesById);
         context.changeState(new FilterTables());
         context.doStateFunction(null);
     }

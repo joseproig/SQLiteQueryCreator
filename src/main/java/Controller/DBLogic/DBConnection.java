@@ -37,7 +37,7 @@ public class DBConnection {
         return instance;
     }
 
-    public HashMap<String, Taula> showTables (){
+    public HashMap<String, Taula> showTables (HashMap<Integer,Taula> taulesById){
         Statement statement = null;
         try {
             statement = connection.createStatement();
@@ -52,7 +52,10 @@ public class DBConnection {
                 String name = rs.getString("name");
                 List<Columna> fks = new ArrayList<Columna>();
                 HashMap<String, Columna> columnes = describeTable(name,fks);
-                taules.put(name,new Taula(id++,name,columnes,fks));
+                Taula taula =  new Taula(id,name,columnes,fks);
+                taulesById.put(id,taula);
+                taules.put(name,taula);
+                id++;
             }
 
             return taules;

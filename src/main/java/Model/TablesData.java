@@ -9,7 +9,8 @@ public final class TablesData {
     private short [][] dist;
     private BestPathsMatrix bestPathsMatrix;
     private HashMap <Long, short[]> caminsFiltrats;
-    HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
+    private HashMap <Integer, Taula> taulesById;
+    private HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
 
     private TablesData() {}
 
@@ -71,5 +72,13 @@ public final class TablesData {
 
     public void setCaminsPossiblesSolucions(HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions) {
         this.caminsPossiblesSolucions = caminsPossiblesSolucions;
+    }
+
+    public HashMap<Integer, Taula> getTaulesById() {
+        return taulesById;
+    }
+
+    public void setTaulesById(HashMap<Integer, Taula> taulesById) {
+        this.taulesById = taulesById;
     }
 }
