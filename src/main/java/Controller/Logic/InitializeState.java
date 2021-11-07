@@ -2,6 +2,7 @@ package Controller.Logic;
 
 import Controller.DBLogic.DBConnection;
 import Model.*;
+import Model.ParametersOfQuestion.Question;
 import Utils.Algorithms.FloydWarshall;
 import com.google.gson.Gson;
 
@@ -21,7 +22,12 @@ public class InitializeState extends State {
             Gson gson = new Gson();
             BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
             ProgramConfig programConfig = gson.fromJson(br, ProgramConfig.class);
+
             ProgramConfig.setInstance(programConfig);
+            //Guardem els parametres que ha de tenir la pregunta
+            //takeParametersOfQuestion();
+
+
             HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
 
             return taules;
@@ -30,6 +36,17 @@ public class InitializeState extends State {
         }
         return null;
     }
+
+
+    /*private void takeParametersOfQuestion () {
+        int i = 0;
+        for (Question question: ProgramConfig.getInstance().getFilterParams().getQuestions()) {
+
+
+
+            i++;
+        }
+    }*/
 
     private DynamicMatrix initializeGraphAndListOfConnections (HashMap <String, Taula> taules, MatrixOfConnections matrixOfConnections) {
         Iterator<String> it = taules.keySet().iterator();
@@ -92,7 +109,8 @@ public class InitializeState extends State {
         TablesData.getInstance().setDist(dist);
         TablesData.getInstance().setTaules(taules);
         TablesData.getInstance().setTaulesById(taulesById);
+
         context.changeState(new FilterTables());
-        context.doStateFunction(null);
+        context.doStateFunction(string);
     }
 }

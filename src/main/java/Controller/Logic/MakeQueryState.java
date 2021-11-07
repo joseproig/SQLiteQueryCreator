@@ -19,7 +19,7 @@ public class MakeQueryState extends State{
     @Override
     void doYourFunction(String string) throws IOException {
         List <Select> results = new ArrayList<>();
-
+        System.out.println("----------------------------Pregunta " + (Integer.parseInt(string) + 1) + "--------------------------------------");
         for (Long key:TablesData.getInstance().getCaminsPossiblesSolucions().keySet()) {
             //ArrayList<TableLayer> arrayList = new ArrayList<>();
             //arrayList.add(TablesData.getInstance().getCaminsPossiblesSolucions().get(key).getConnections());
@@ -33,6 +33,17 @@ public class MakeQueryState extends State{
             results.add(result);
             System.out.println(result.toString());
         }
+        System.out.println("----------------------------------------------------------------------------");
+        TablesData.getInstance().setPossibleQueries(results);
+
+        int numOfQuestion = Integer.parseInt(string) + 1;
+        if (numOfQuestion == ProgramConfig.getInstance().getFilterParams().getQuestions().size()) {
+            context.changeState(new GenerateXML());
+        } else {
+            context.changeState(new FilterTables());
+            string = "" + numOfQuestion;
+        }
+        context.doStateFunction(string);
     }
 
     private void makeFrom (TableLayer tableLayer,IntegerRef i, TableFrom tableFrom) {

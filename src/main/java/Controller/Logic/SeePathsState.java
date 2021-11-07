@@ -1,5 +1,6 @@
 package Controller.Logic;
 
+import Model.ProgramConfig;
 import Model.ResultOfFiltering;
 import Model.TablesData;
 
@@ -17,7 +18,7 @@ public class SeePathsState extends State{
         HashMap<Long, ResultOfFiltering> resultat = new HashMap<>();
         for (Long clave: TablesData.getInstance().getCaminsFiltrats().keySet()) {
             short [] value = TablesData.getInstance().getCaminsFiltrats().get(clave);
-            SubMatrixTreatment subMatrixTreatment = new SubMatrixTreatment(TablesData.getInstance().getMatrixOfDirectlyConnections(), value);
+            SubMatrixTreatment subMatrixTreatment = new SubMatrixTreatment(TablesData.getInstance().getMatrixOfDirectlyConnections(), value, ProgramConfig.getInstance().getFilterParams().getQuestions().get(Integer.parseInt(string)).getMinNumTables(), ProgramConfig.getInstance().getFilterParams().getQuestions().get(Integer.parseInt(string)).getMaxNumTables());
             subMatrixTreatments.add(subMatrixTreatment);
             subMatrixTreatment.start();
         }
@@ -31,6 +32,6 @@ public class SeePathsState extends State{
         }
         TablesData.getInstance().setCaminsPossiblesSolucions(resultat);
         context.changeState(new MakeQueryState());
-        context.doStateFunction(null);
+        context.doStateFunction(string);
     }
 }

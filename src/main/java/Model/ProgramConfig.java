@@ -1,5 +1,7 @@
 package Model;
 
+import Model.ParametersOfQuestion.ParametersConfig;
+
 public class ProgramConfig {
     private static ProgramConfig instance;
     private String dbPath;

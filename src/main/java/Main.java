@@ -13,7 +13,7 @@ public class Main {
 
         //Filtrem a aquells camins que interessen
         Context context = new Context(new InitializeState());
-        context.doStateFunction(null);
+        context.doStateFunction("0");
 
 
         //TODO: Resposta per descartar solucions repetides fer Hashmap de ids de les taules ordenats

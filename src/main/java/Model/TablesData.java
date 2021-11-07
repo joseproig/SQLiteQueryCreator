@@ -1,6 +1,10 @@
 package Model;
 
+import Model.Query.Select;
+
+import javax.management.Query;
 import java.util.HashMap;
+import java.util.List;
 
 public final class TablesData {
     private static TablesData instance;
@@ -11,6 +15,7 @@ public final class TablesData {
     private HashMap <Long, short[]> caminsFiltrats;
     private HashMap <Integer, Taula> taulesById;
     private HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
+    private List<Select> possibleQueries;
 
     private TablesData() {}
 
@@ -80,5 +85,13 @@ public final class TablesData {
 
     public void setTaulesById(HashMap<Integer, Taula> taulesById) {
         this.taulesById = taulesById;
+    }
+
+    public List<Select> getPossibleQueries() {
+        return possibleQueries;
+    }
+
+    public void setPossibleQueries(List<Select> possibleQueries) {
+        this.possibleQueries = possibleQueries;
     }
 }

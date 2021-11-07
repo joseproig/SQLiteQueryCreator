@@ -15,11 +15,15 @@ public class SubMatrixTreatment extends Thread{
     MatrixOfConnections submatrixOfConnections;
     short [] listOfSubmatrix;
     HashMap<Long, ResultOfFiltering> resultat;
+    private int minNumTables;
+    private int maxNumTables;
 
-    public SubMatrixTreatment (MatrixOfConnections submatrixOfConnections, short [] listOfSubmatrix) {
+    public SubMatrixTreatment (MatrixOfConnections submatrixOfConnections, short [] listOfSubmatrix, int minNumTables, int maxNumTables) {
         this.submatrixOfConnections = submatrixOfConnections;
         this.listOfSubmatrix = listOfSubmatrix;
         this.resultat = new HashMap<>();
+        this.minNumTables = minNumTables;
+        this.maxNumTables = maxNumTables;
     }
 
     @Override
@@ -59,7 +63,7 @@ public class SubMatrixTreatment extends Thread{
 
 
             if (numPossibilities == 0) {
-                if (ProgramConfig.getInstance().getFilterParams().getMinNumTables() <= nodesConsultats.get(llistaAPlenar).size()) {
+                if (minNumTables <= nodesConsultats.get(llistaAPlenar).size() && maxNumTables >= nodesConsultats.get(llistaAPlenar).size()) {
                     resultat.put(ByteTreatment.convertListIntegerToLong(nodesConsultats.get(llistaAPlenar)), new ResultOfFiltering(tableLayers.get(llistaAPlenar),nodesConsultats.get(llistaAPlenar)));
                 }
                 return ;
