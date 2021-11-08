@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MakeQueryState extends State{
+public class MakeFromState extends State{
     //TODO: Doble relacions entre dos taules --> Ex: Treballador <--> Departament
     //TODO: Evitar for de for (Columna c : t1.getForeignKeys()) {
     //TODO: Select amb una classe, no crear string directament
@@ -27,11 +27,15 @@ public class MakeQueryState extends State{
             TableLayer tableLayer = TablesData.getInstance().getCaminsPossiblesSolucions().get(key).getConnections();
             TableFrom tableFrom = new TableFrom("t" + 0, TablesData.getInstance().getTaulesById().get(tableLayer.getTableNum()).getNomTaula());
             makeFrom(tableLayer,new IntegerRef(1),tableFrom);
-            Select result = new Select();
-            result.setFrom(new From(tableFrom));
+            From from = new From(tableFrom);
 
-            results.add(result);
-            System.out.println(result.toString());
+            List<ColumnaResult> columnesPossibles = columnsOfOneTable(from.getTableFrom().getTableRealName(),from.getTableFrom().getTableName());
+            returnSelectColumns(columnesPossibles,from.getTableFrom());
+
+            //TODO: Fer combinacions en bytes en una nova funcio i definir RESULTAT
+            generateDifferentCombinations (results, columnesPossibles, from, Integer.parseInt(string));
+
+            //System.out.println(result.toString());
         }
         System.out.println("----------------------------------------------------------------------------");
         TablesData.getInstance().setPossibleQueries(results);
@@ -44,6 +48,45 @@ public class MakeQueryState extends State{
             string = "" + numOfQuestion;
         }
         context.doStateFunction(string);
+    }
+
+    private void generateDifferentCombinations (List <Select> results, List<ColumnaResult> columnesPossibles, From from, int actualQuestion) {
+        int numberOfColumnsToShow = ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToSeeInSelect().size();
+
+        for (int combinations = 0; combinations <= Math.pow(2,columnesPossibles.size());combinations++) {
+            HashMap<String, ColumnaResult> columns = new HashMap<>();
+            int i = 0;
+            int j = 0;
+            while((j != numberOfColumnsToShow) && (i < columnesPossibles.size())) {
+                if ((combinations >> i & 1) == 1) {
+                    columns.put(ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToSeeInSelect().get(j), columnesPossibles.get(i));
+                    j++;
+                }
+                i++;
+            }
+            if (j == numberOfColumnsToShow) {
+                Select select = new Select(columns,from);
+                results.add(select);
+                System.out.println(select);
+            }
+        }
+    }
+
+    private void returnSelectColumns (List <ColumnaResult> columnaResults, TableFrom tableFrom) {
+        for (Relation relation: tableFrom.getRelations()) {
+            columnaResults.addAll(columnsOfOneTable(relation.getTableFrom().getTableRealName(), relation.getTableFrom().getTableName()));
+            returnSelectColumns(columnaResults,relation.getTableFrom());
+        }
+    }
+
+    private List<ColumnaResult> columnsOfOneTable (String realnameOfTable, String nameOfTable) {
+        List<ColumnaResult> columnaResults = new ArrayList<>();
+        for (String columnaKey : TablesData.getInstance().getTaules().get(realnameOfTable).getColumnes().keySet()) {
+            Columna columna = TablesData.getInstance().getTaules().get(realnameOfTable).getColumnes().get(columnaKey);
+            ColumnaResult columnaResult = new ColumnaResult(columna,nameOfTable);
+            columnaResults.add(columnaResult);
+        }
+        return columnaResults;
     }
 
     private void makeFrom (TableLayer tableLayer,IntegerRef i, TableFrom tableFrom) {

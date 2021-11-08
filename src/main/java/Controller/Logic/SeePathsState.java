@@ -31,7 +31,7 @@ public class SeePathsState extends State{
             }
         }
         TablesData.getInstance().setCaminsPossiblesSolucions(resultat);
-        context.changeState(new MakeQueryState());
+        context.changeState(new MakeFromState());
         context.doStateFunction(string);
     }
 }

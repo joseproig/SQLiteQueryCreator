@@ -94,4 +94,8 @@ public final class TablesData {
     public void setPossibleQueries(List<Select> possibleQueries) {
         this.possibleQueries = possibleQueries;
     }
+
+    public void addPossibleQuery (Select select) {
+        possibleQueries.add(select);
+    }
 }

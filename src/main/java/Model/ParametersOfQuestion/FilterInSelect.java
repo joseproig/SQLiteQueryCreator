@@ -4,6 +4,11 @@ public class FilterInSelect {
     private String columnThatContainsFilter;
     private String typeOfFilter;
 
+    public FilterInSelect(String columnThatContainsFilter, String typeOfFilter) {
+        this.columnThatContainsFilter = columnThatContainsFilter;
+        this.typeOfFilter = typeOfFilter;
+    }
+
     public String getColumnThatContainsFilter() {
         return columnThatContainsFilter;
     }

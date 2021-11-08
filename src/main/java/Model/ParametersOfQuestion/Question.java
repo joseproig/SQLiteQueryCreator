@@ -4,8 +4,12 @@ public class Question {
     private String question;
     private int minNumTables;
     private int maxNumTables;
-    private Structure options;
+    private Structure structure;
 
+
+    public Question() {
+        structure = new Structure();
+    }
 
     public String getQuestion() {
         return question;
@@ -31,11 +35,11 @@ public class Question {
         this.maxNumTables = maxNumTables;
     }
 
-    public Structure getOptions() {
-        return options;
+    public Structure getStructure() {
+        return structure;
     }
 
-    public void setOptions(Structure options) {
-        this.options = options;
+    public void setStructure(Structure structure) {
+        this.structure = structure;
     }
 }

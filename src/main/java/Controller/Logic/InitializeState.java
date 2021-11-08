@@ -2,7 +2,10 @@ package Controller.Logic;
 
 import Controller.DBLogic.DBConnection;
 import Model.*;
+import Model.ParametersOfQuestion.FilterInSelect;
+import Model.ParametersOfQuestion.ParametersConfig;
 import Model.ParametersOfQuestion.Question;
+import Model.ParametersOfQuestion.Structure;
 import Utils.Algorithms.FloydWarshall;
 import com.google.gson.Gson;
 
@@ -14,10 +17,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class InitializeState extends State {
     public static final String JSON_PATH = "src/fileUtils/config.json";
-    private HashMap <String, Taula> getTaules (HashMap<Integer,Taula> taulesById) {
+    private HashMap <String, Taula> getTaules (HashMap<Integer,Taula> taulesById, int numOfQuestion) {
         try {
             Gson gson = new Gson();
             BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
@@ -25,7 +30,7 @@ public class InitializeState extends State {
 
             ProgramConfig.setInstance(programConfig);
             //Guardem els parametres que ha de tenir la pregunta
-            //takeParametersOfQuestion();
+            takeParametersOfQuestion();
 
 
             HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
@@ -38,15 +43,51 @@ public class InitializeState extends State {
     }
 
 
-    /*private void takeParametersOfQuestion () {
+    private void takeParametersOfQuestion () {
+        String regularExpression = "(?<=\\{)(.*?)(?=\\})";
+        Pattern pat = Pattern.compile(regularExpression);
+
+
         int i = 0;
         for (Question question: ProgramConfig.getInstance().getFilterParams().getQuestions()) {
+            Matcher mat = pat.matcher(question.getQuestion());
+            while (mat.find()) {
+                String argument = mat.group(0);
 
+                //Una vegada tenim l'interior del que hi ha als {} anem a veure que es.
+                String [] splits = argument.split("_");
+                int numberOfParts = splits.length;
 
-
+                //String expressionOfType = "[a-zA-Z]+";
+                //String type = getStringOfPattern(expressionOfType,splits[0]);
+                switch (splits[0]) {
+                    case "S":
+                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToSeeInSelect(splits[1]);
+                        break;
+                    case "F":
+                        String typeOfFilter = null;
+                        if (numberOfParts > 2) {
+                            typeOfFilter = splits[2];
+                        }
+                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToFilterInSelect(new FilterInSelect(splits[1],typeOfFilter));
+                        break;
+                    case "O":
+                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToOrderBy(splits[1]);
+                        break;
+                    default:
+                        break;
+                }
+            }
             i++;
         }
-    }*/
+    }
+
+    private String getStringOfPattern (String expression, String stringToExtract) {
+        Pattern pattern = Pattern.compile(expression);
+        Matcher matcher = pattern.matcher(stringToExtract);
+        matcher.find();
+        return matcher.group(0);
+    }
 
     private DynamicMatrix initializeGraphAndListOfConnections (HashMap <String, Taula> taules, MatrixOfConnections matrixOfConnections) {
         Iterator<String> it = taules.keySet().iterator();
@@ -97,7 +138,7 @@ public class InitializeState extends State {
          */
 
         HashMap<Integer,Taula> taulesById = new HashMap<>();
-        HashMap<String, Taula> taules = getTaules(taulesById);
+        HashMap<String, Taula> taules = getTaules(taulesById, Integer.parseInt(string));
         MatrixOfConnections matrixOfDirectlyConnections = new MatrixOfConnections();
         DynamicMatrix connectionsBetweenTables = initializeGraphAndListOfConnections(taules,matrixOfDirectlyConnections);
 
