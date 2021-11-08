@@ -52,23 +52,27 @@ public class MakeFromState extends State{
 
     private void generateDifferentCombinations (List <Select> results, List<ColumnaResult> columnesPossibles, From from, int actualQuestion) {
         int numberOfColumnsToShow = ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToSeeInSelect().size();
-
+        HashMap<Integer, Boolean> isPresent = new HashMap<>();
+        int possibleCombination = 0;
         for (int combinations = 0; combinations <= Math.pow(2,columnesPossibles.size());combinations++) {
             HashMap<String, ColumnaResult> columns = new HashMap<>();
             int i = 0;
             int j = 0;
             while((j != numberOfColumnsToShow) && (i < columnesPossibles.size())) {
                 if ((combinations >> i & 1) == 1) {
+                    possibleCombination = (possibleCombination | (1 << i));
                     columns.put(ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToSeeInSelect().get(j), columnesPossibles.get(i));
                     j++;
                 }
                 i++;
             }
-            if (j == numberOfColumnsToShow) {
+            if (j == numberOfColumnsToShow && isPresent.get(possibleCombination) == null) {
                 Select select = new Select(columns,from);
                 results.add(select);
+                isPresent.put(possibleCombination, true);
                 System.out.println(select);
             }
+            possibleCombination = 0;
         }
     }
 
