@@ -336,6 +336,30 @@ public class MakeFromState extends State{
                 array.add(c.getColumnReference());
             }
         }
+        for (Map.Entry<String, List<ColumnInSelect>> entry : ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToTakeIntoAccountInSelect().getTablesWithHisRespectiveColumns().entrySet()) {
+            Integer numOfColumns = necessaryColumnsForEachTable.get(entry.getKey());
+            if (numOfColumns == null) {
+                Integer numOfColumnsRef = 0;
+                List<String> array = new ArrayList<>();
+                columnsForEachTable.put(entry.getKey(),array);
+                necessaryColumnsForEachTable.put(entry.getKey(),numOfColumnsRef);
+            }
+            numOfColumns = necessaryColumnsForEachTable.get(entry.getKey());
+            for (ColumnInSelect c: entry.getValue()) {
+                boolean encountered = false;
+                for (String c2:columnsForEachTable.get(entry.getKey())){
+                    if (c.getColumnReference().equals(c2)) {
+                        encountered = true;
+                        break;
+                    }
+                }
+                if (!encountered) {
+                    columnsForEachTable.get(entry.getKey()).add(c.getColumnReference());
+                    numOfColumns++;
+                    necessaryColumnsForEachTable.put(entry.getKey(),numOfColumns);
+                }
+            }
+        }
         for (FilterInSelect filterInSelect: ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToFilterInSelect()) {
             //necessaryColumnsForEachTable.put(entry.getKey(),entry.getValue().size());
             if (filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption")) {

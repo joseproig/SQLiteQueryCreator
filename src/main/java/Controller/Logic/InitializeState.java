@@ -52,10 +52,12 @@ public class InitializeState extends State {
         Pattern pat = Pattern.compile(regularExpression);
         String regularExpression2 = "^(.[a-zA-Z0-9_+\\-\\/* ]+?)(>=|<=|>|<|==|!=)(.[a-zA-Z0-9_+\\-\\/* ]+?)$";
         Pattern pat2 = Pattern.compile(regularExpression2);
-        String regularExpression3 = "^(c[0-9]+_t[0-9]+)$";
+        String regularExpression3 = "^(c[0-9]+_t[0-9]+\\_s)$";
         Pattern pat3 = Pattern.compile(regularExpression3);
         String regularExpression4 = "^(t[0-9]+)$";
         Pattern pat4 = Pattern.compile(regularExpression4);
+        String regularExpression5 = "^(c[0-9]+_t[0-9]+)$";
+        Pattern pat5 = Pattern.compile(regularExpression5);
 
         int i = 0;
         for (Question question: ProgramConfig.getInstance().getFilterParams().getQuestions()) {
@@ -63,8 +65,10 @@ public class InitializeState extends State {
             while (mat.find()) {
                 String contentInKeys = mat.group(0).toLowerCase();
                 if (!getColumnsToAppearInSelect (i,pat3,contentInKeys)) {
-                    if (!getTablesThatWillParticipateInSelect(i,pat4,contentInKeys)) {
-                        getFilterParams(i, contentInKeys, pat2);
+                    if (!getColumnsToTakeIntoAccount (i, pat5, contentInKeys)) {
+                        if (!getTablesThatWillParticipateInSelect(i, pat4, contentInKeys)) {
+                            getFilterParams(i, contentInKeys, pat2);
+                        }
                     }
                 }
             }
@@ -79,7 +83,6 @@ public class InitializeState extends State {
         if (matches4.find()) {
             String nameOfTable = matches4.group(0);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addTableToAppearInSelect(nameOfTable);
-            System.out.println("bu3");
             return true;
         }
         return false;
@@ -93,12 +96,23 @@ public class InitializeState extends State {
             String table = splits[1];
             ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToSeeInSelect(columnInSelect);
-            System.out.println("bu2");
             return true;
         }
         return false;
     }
 
+    private boolean getColumnsToTakeIntoAccount (int numberOfQuestion, Pattern pat5, String contentInKeys) {
+        Matcher matches5 = pat5.matcher(contentInKeys);
+        if (matches5.find()) {
+            String [] splits = matches5.group(0).split("_");
+            String column = splits [0];
+            String table = splits[1];
+            ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToTakeIntoAccount(columnInSelect);
+            return true;
+        }
+        return false;
+    }
 
     private boolean getFilterParams (int numberOfQuestion, String contentInKeys, Pattern pat2) {
         Matcher matches2 = pat2.matcher(contentInKeys);
@@ -119,7 +133,6 @@ public class InitializeState extends State {
                 filterOption2 = new ColumnFilterOption("ColumnFilterOption",splits[1],splits[0]);
             }
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToFilterInSelect(new FilterInSelect(filterOption1,matches2.group(2),filterOption2));
-            System.out.println("bu");
             return true;
         }
 

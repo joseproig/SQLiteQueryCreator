@@ -12,12 +12,14 @@ public class Structure {
     private List<FilterInSelect> columnsToFilterInSelect;
     private List<String> tablesThatAppearInSelect;
     private List<String> columnsToOrderBy;
+    private ColumnsInSelect columnsToTakeIntoAccountInSelect;
 
     public Structure() {
         columnsToSeeInSelect = new ColumnsInSelect();
         columnsToFilterInSelect = new ArrayList<>();
         columnsToOrderBy = new ArrayList<>();
         tablesThatAppearInSelect = new ArrayList<>();
+        columnsToTakeIntoAccountInSelect = new ColumnsInSelect();
     }
 
     public List<String> getTablesThatAppearInSelect() {
@@ -68,4 +70,15 @@ public class Structure {
         columnsToOrderBy.add(string);
     }
 
+    public void addColumnToTakeIntoAccount (ColumnInSelect columnInSelect) {
+        columnsToTakeIntoAccountInSelect.addNewColumnInSelect(columnInSelect);
+    }
+
+    public ColumnsInSelect getColumnsToTakeIntoAccountInSelect() {
+        return columnsToTakeIntoAccountInSelect;
+    }
+
+    public void setColumnsToTakeIntoAccountInSelect(ColumnsInSelect columnsToTakeIntoAccountInSelect) {
+        this.columnsToTakeIntoAccountInSelect = columnsToTakeIntoAccountInSelect;
+    }
 }
