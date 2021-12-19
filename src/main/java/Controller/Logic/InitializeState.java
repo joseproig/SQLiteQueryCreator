@@ -3,8 +3,12 @@ package Controller.Logic;
 import Controller.DBLogic.DBConnection;
 import Model.*;
 import Model.ParametersOfQuestion.FilterInSelect;
+import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
+import Model.ParametersOfQuestion.FilterOptions.FilterOption;
+import Model.ParametersOfQuestion.FilterOptions.LiteralValue;
 import Model.ParametersOfQuestion.ParametersConfig;
 import Model.ParametersOfQuestion.Question;
+import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
 import Model.ParametersOfQuestion.Structure;
 import Utils.Algorithms.FloydWarshall;
 import com.google.gson.Gson;
@@ -46,48 +50,83 @@ public class InitializeState extends State {
     private void takeParametersOfQuestion () {
         String regularExpression = "(?<=\\{)(.*?)(?=\\})";
         Pattern pat = Pattern.compile(regularExpression);
-
+        String regularExpression2 = "^(.[a-zA-Z0-9_+\\-\\/* ]+?)(>=|<=|>|<|==|!=)(.[a-zA-Z0-9_+\\-\\/* ]+?)$";
+        Pattern pat2 = Pattern.compile(regularExpression2);
+        String regularExpression3 = "^(c[0-9]+_t[0-9]+)$";
+        Pattern pat3 = Pattern.compile(regularExpression3);
+        String regularExpression4 = "^(t[0-9]+)$";
+        Pattern pat4 = Pattern.compile(regularExpression4);
 
         int i = 0;
         for (Question question: ProgramConfig.getInstance().getFilterParams().getQuestions()) {
             Matcher mat = pat.matcher(question.getQuestion());
             while (mat.find()) {
-                String argument = mat.group(0);
-
-                //Una vegada tenim l'interior del que hi ha als {} anem a veure que es.
-                String [] splits = argument.split("_");
-                int numberOfParts = splits.length;
-
-                //String expressionOfType = "[a-zA-Z]+";
-                //String type = getStringOfPattern(expressionOfType,splits[0]);
-                switch (splits[0]) {
-                    case "S":
-                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToSeeInSelect(splits[1]);
-                        break;
-                    case "F":
-                        String typeOfFilter = null;
-                        if (numberOfParts > 2) {
-                            typeOfFilter = splits[2];
-                        }
-                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToFilterInSelect(new FilterInSelect(splits[1],typeOfFilter));
-                        break;
-                    case "O":
-                        ProgramConfig.getInstance().getFilterParams().getQuestions().get(i).getStructure().addColumnToOrderBy(splits[1]);
-                        break;
-                    default:
-                        break;
+                String contentInKeys = mat.group(0).toLowerCase();
+                if (!getColumnsToAppearInSelect (i,pat3,contentInKeys)) {
+                    if (!getTablesThatWillParticipateInSelect(i,pat4,contentInKeys)) {
+                        getFilterParams(i, contentInKeys, pat2);
+                    }
                 }
             }
+            Question actualQuestion = ProgramConfig.getInstance().getFilterParams().getQuestions().get(i);
+            actualQuestion.setMinNumTables(actualQuestion.getStructure().getTablesThatAppearInSelect().size());
             i++;
         }
     }
 
-    private String getStringOfPattern (String expression, String stringToExtract) {
-        Pattern pattern = Pattern.compile(expression);
-        Matcher matcher = pattern.matcher(stringToExtract);
-        matcher.find();
-        return matcher.group(0);
+    private boolean getTablesThatWillParticipateInSelect (int numberOfQuestion, Pattern pat4, String contentInKeys) {
+        Matcher matches4 = pat4.matcher(contentInKeys);
+        if (matches4.find()) {
+            String nameOfTable = matches4.group(0);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addTableToAppearInSelect(nameOfTable);
+            System.out.println("bu3");
+            return true;
+        }
+        return false;
     }
+
+    private boolean getColumnsToAppearInSelect (int numberOfQuestion, Pattern pat3, String contentInKeys) {
+        Matcher matches3 = pat3.matcher(contentInKeys);
+        if (matches3.find()) {
+            String [] splits = matches3.group(0).split("_");
+            String column = splits [0];
+            String table = splits[1];
+            ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToSeeInSelect(columnInSelect);
+            System.out.println("bu2");
+            return true;
+        }
+        return false;
+    }
+
+
+    private boolean getFilterParams (int numberOfQuestion, String contentInKeys, Pattern pat2) {
+        Matcher matches2 = pat2.matcher(contentInKeys);
+        if (matches2.find()) {
+            FilterOption filterOption1;
+            FilterOption filterOption2;
+            if (matches2.group(1).equals("literal")) {
+                filterOption1 = new LiteralValue("LiteralValue", matches2.group(1));
+            } else {
+                String [] splits = matches2.group(1).split("_");
+                filterOption1 = new ColumnFilterOption("ColumnFilterOption",splits[1],splits[0]);
+            }
+
+            if (matches2.group(3).equals("literal")) {
+                filterOption2 = new LiteralValue("LiteralValue", matches2.group(3));
+            } else {
+                String [] splits = matches2.group(3).split("_");
+                filterOption2 = new ColumnFilterOption("ColumnFilterOption",splits[1],splits[0]);
+            }
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToFilterInSelect(new FilterInSelect(filterOption1,matches2.group(2),filterOption2));
+            System.out.println("bu");
+            return true;
+        }
+
+        return false;
+    }
+
+
 
     private DynamicMatrix initializeGraphAndListOfConnections (HashMap <String, Taula> taules, MatrixOfConnections matrixOfConnections) {
         Iterator<String> it = taules.keySet().iterator();
@@ -101,7 +140,6 @@ public class InitializeState extends State {
             Taula taula = taules.get(nomTaula);
             List<Columna> fks = taula.getForeignKeys();
 
-
             //Copiem a la llista tots els ids de les taules a les que fa referencia
             int i = 0;
             while (i < fks.size()) {
@@ -114,7 +152,6 @@ public class InitializeState extends State {
             graph.insertarTaula(taula.getId(),matrixOfConnections.getRelationsOfATable(taula.getId()));
 
         }
-
         //Convertim el graph creat en bidireccional (de tal forma que una relació de FK, es convertirà en bidireccional)
         graph.convertirEnBidireccional();
         matrixOfConnections.makeItBidirectional();

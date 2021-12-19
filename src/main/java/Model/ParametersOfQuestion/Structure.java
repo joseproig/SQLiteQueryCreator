@@ -1,27 +1,38 @@
 package Model.ParametersOfQuestion;
 
-import Model.Taula;
+
+import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
+import Model.ParametersOfQuestion.SelectFolder.ColumnsInSelect;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Structure {
-    private List<String> columnsToSeeInSelect;
+    private ColumnsInSelect columnsToSeeInSelect;
     private List<FilterInSelect> columnsToFilterInSelect;
+    private List<String> tablesThatAppearInSelect;
     private List<String> columnsToOrderBy;
 
     public Structure() {
-        columnsToSeeInSelect = new ArrayList<>();
+        columnsToSeeInSelect = new ColumnsInSelect();
         columnsToFilterInSelect = new ArrayList<>();
         columnsToOrderBy = new ArrayList<>();
+        tablesThatAppearInSelect = new ArrayList<>();
     }
 
-    public List<String> getColumnsToSeeInSelect() {
+    public List<String> getTablesThatAppearInSelect() {
+        return tablesThatAppearInSelect;
+    }
+
+    public void setTablesThatAppearInSelect(List<String> tablesThatAppearInSelect) {
+        this.tablesThatAppearInSelect = tablesThatAppearInSelect;
+    }
+
+    public ColumnsInSelect getColumnsToSeeInSelect() {
         return columnsToSeeInSelect;
     }
 
-    public void setColumnsToSeeInSelect(List<String> columnsToSeeInSelect) {
+    public void setColumnsToSeeInSelect(ColumnsInSelect columnsToSeeInSelect) {
         this.columnsToSeeInSelect = columnsToSeeInSelect;
     }
 
@@ -41,9 +52,12 @@ public class Structure {
         this.columnsToOrderBy = columnsToOrderBy;
     }
 
+    public void addTableToAppearInSelect (String string) {
+        tablesThatAppearInSelect.add(string);
+    }
 
-    public void addColumnToSeeInSelect (String string) {
-        columnsToSeeInSelect.add(string);
+    public void addColumnToSeeInSelect (ColumnInSelect columnInSelect) {
+        columnsToSeeInSelect.addNewColumnInSelect(columnInSelect);
     }
 
     public void addColumnToFilterInSelect (FilterInSelect filterInSelect) {

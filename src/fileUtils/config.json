@@ -1,16 +1,10 @@
 {
-  "dbPath": "/Users/joseproigtorres/Desktop/TFG_Data/2021_LAB3_DB.db",
+  "dbPath": "/Users/joseproigtorres/Desktop/TFG_Data/2021_LAB4_DB.db",
   "filterParams": {
     "questions": [
       {
-        "question":"El carbassot es un personatge que fa el que bonament pot, així no ha pogut complit les exigencies que una federació d'escalada li ha demanat. Li han demanat que ensenyi {S_C1},{S_C2},{S_C3} sempre i quan compleixin les seguents condicions {F_C1_>}, {F_C2}, {F_C4} i ordenals segons {O_C1}, {O_C2}",
-        "minNumTables": 5,
+        "question":"List the name {C1_T1} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==c1_t2} to the name {C1_T3} of a student {T3}. ",
         "maxNumTables": 6
-      },
-      {
-        "question":"El carbassot es un personatge que fa el que bonament pot, així no ha pogut complit les exigencies que una federació d'escalada li ha demanat. Li han demanat que ensenyi {S_C1},{S_C2},{S_C3} sempre i quan compleixin les seguents condicions {F_C1_>}, {F_C2}, {F_C4} i ordenals segons {O_C1}, {O_C2}",
-        "minNumTables": 5,
-        "maxNumTables": 8
       }
     ]
   }

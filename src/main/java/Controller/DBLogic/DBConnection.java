@@ -66,6 +66,20 @@ public class DBConnection {
         return null;
     }
 
+    public boolean testIfQueryHasResults (String query) {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            ResultSet rs = statement.executeQuery(query);
+
+            return rs.next();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return false;
+    }
+
     private HashMap<String, Columna> describeTable (String table, List<Columna> fkRef) {
         Statement statement = null;
         try {
@@ -77,8 +91,9 @@ public class DBConnection {
 
             while(rs.next()) {
                 Columna columna = new Columna();
+                columna.setTableName(table);
                 columna.setColumnName(rs.getString("name"));
-
+                columna.setType(rs.getString("type"));
                 columnes.put(columna.getColumnName(),columna);
             }
 
@@ -101,5 +116,60 @@ public class DBConnection {
         return null;
     }
 
+    public Integer generateRandomOfIntegerColumn (String columnName, String tableName) {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            ResultSet rs = statement.executeQuery("SELECT " + columnName + " FROM " + tableName + " ORDER BY RANDOM() LIMIT 1");
+
+            if (rs.next()) {
+                return rs.getInt(columnName);
+            } else {
+                return null;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
+
+    public String generateRandomOfDateColumn (String columnName, String tableName) {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            ResultSet rs = statement.executeQuery("SELECT " + columnName + " FROM " + tableName + " ORDER BY RANDOM() LIMIT 1");
+
+
+            if (rs.next()) {
+                return rs.getString(columnName);
+            } else {
+                return null;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
+
+    public String generateRandomOfVarcharColumn (String columnName, String tableName) {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            ResultSet rs = statement.executeQuery("SELECT " + columnName + " FROM " + tableName + " ORDER BY RANDOM() LIMIT 1");
+
+
+            if (rs.next()) {
+                return rs.getString(columnName);
+            } else {
+                return null;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
 
 }

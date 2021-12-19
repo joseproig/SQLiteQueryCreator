@@ -4,7 +4,7 @@ import Model.Columna;
 
 import java.util.HashMap;
 
-public class Select {
+public class Select implements Cloneable{
     private HashMap<String, ColumnaResult> columnaResult;
     private From from;
     private Where where;
@@ -13,6 +13,7 @@ public class Select {
     public Select(HashMap<String, ColumnaResult> columnaResult, From from) {
         this.columnaResult = columnaResult;
         this.from = from;
+        this.where = new Where();
     }
 
     public From getFrom() {
@@ -42,8 +43,11 @@ public class Select {
     public String toString () {
         StringBuilder stringBuilder = new StringBuilder("SELECT " + stringifyColumns());
         stringBuilder.append(from.toString());
+        stringBuilder.append(where.toString());
         return stringBuilder.toString();
     }
+
+
 
     private String stringifyColumns () {
         StringBuilder columns = new StringBuilder();
@@ -59,5 +63,10 @@ public class Select {
             }
         }
         return columns.toString();
+    }
+
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }
