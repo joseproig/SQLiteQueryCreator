@@ -10,7 +10,7 @@ public class LiteralDateWhere extends WhereOperand{
 
     @Override
     public String toString() {
-        return date;
+        return "'" + date + "'";
     }
 
     public String getDate() {

@@ -1,0 +1,25 @@
+package Model.Query.WhereFolder;
+
+
+
+public class LiteralVarcharWhere extends WhereOperand {
+    String varchar;
+
+    public LiteralVarcharWhere(String varchar) {
+        super("LiteralIntegerWhere");
+        this.varchar = varchar;
+    }
+
+    public String getVarchar() {
+        return varchar;
+    }
+
+    public void setVarchar(String varchar) {
+        this.varchar = varchar;
+    }
+
+    @Override
+    public String toString() {
+        return "\"" + varchar + "\"";
+    }
+}

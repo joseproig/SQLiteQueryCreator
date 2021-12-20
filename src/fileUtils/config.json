@@ -5,6 +5,10 @@
       {
         "question":"List the name {C1_T1_S} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==c1_t2} to the name {C1_T3} of a student {T3}. ",
         "maxNumTables": 6
+      },
+      {
+        "question":"List the name {C1_T1_S} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==literal} to the name {C1_T3} of a student {T3}. ",
+        "maxNumTables": 6
       }
     ]
   }

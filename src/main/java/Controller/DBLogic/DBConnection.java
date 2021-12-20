@@ -75,6 +75,7 @@ public class DBConnection {
 
             return rs.next();
         } catch (SQLException throwables) {
+            //System.out.println("ERRORU!!!: " + query);
             throwables.printStackTrace();
         }
         return false;

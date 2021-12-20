@@ -168,7 +168,9 @@ public class MakeFromState extends State{
                                         }
                                     }
                                 } else {
-                                    t2 = -1;
+                                    if (filterInSelect.getFilterOption2().getType().equals("LiteralValue")) {
+                                        t2 = -1;
+                                    }
                                 }
                                 h++;
                             }
@@ -176,29 +178,40 @@ public class MakeFromState extends State{
                             ColumnFilterOption columnFilterOption = (ColumnFilterOption) filterInSelect.getFilterOption1();
                             ColumnWhere columnWhere = new ColumnWhere(hashMapT1.get(columnFilterOption.getColumnRference()).getTableNameInFrom(), hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName());
 
+                            WhereOperand secondOperand = null;
                             if (t2 > 0) {
                                 HashMap<String, Columna> hashMapT2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()).get(indexes.get(t2));
                                 ColumnFilterOption columnFilterOption2 = (ColumnFilterOption) filterInSelect.getFilterOption2();
-                                ColumnWhere columnWhere2 = new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName());
+                                secondOperand = new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName());
 
-                                for (String operand: generatePossibleOperandsBetweenColumns(hashMapT1.get(columnFilterOption.getColumnRference()).getType())){
-                                    Expression expression = new Expression(columnWhere,operand,columnWhere2);
-                                    Where where = new Where();
-                                    where.addExpression(expression);
-                                    Select select = new Select(columnsInSelectResult, from);
-                                    select.setWhere(where);
-                                    if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
-                                        System.out.println(select);
-                                        results.add(select);
+                            } else {
+                                if (t2 == -1){
+                                    LiteralValue columnFilterOption2 = (LiteralValue) filterInSelect.getFilterOption2();
+                                    String typeColumnOne = hashMapT1.get(columnFilterOption.getColumnRference()).getType();
+                                    if(typeColumnOne.equalsIgnoreCase("integer")){
+                                        secondOperand = new LiteralIntegerWhere(DBConnection.getInstance(null).generateRandomOfIntegerColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                    } else {
+                                        if (typeColumnOne.equalsIgnoreCase("date")) {
+                                            secondOperand = new LiteralDateWhere(DBConnection.getInstance(null).generateRandomOfDateColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                        } else {
+                                            if (typeColumnOne.toLowerCase().contains("varchar")) {
+                                                secondOperand = new LiteralVarcharWhere(DBConnection.getInstance(null).generateRandomOfVarcharColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                            }
+                                        }
                                     }
                                 }
-                            } /*else {
-                                if (t2 == -1){
-                                    ColumnFilterOption columnFilterOption2 = (ColumnFilterOption) filterOption2;
-
-
+                            }
+                            for (String operand: generatePossibleOperandsBetweenColumns(hashMapT1.get(columnFilterOption.getColumnRference()).getType())){
+                                Expression expression = new Expression(columnWhere,operand,secondOperand);
+                                Where where = new Where();
+                                where.addExpression(expression);
+                                Select select = new Select(columnsInSelectResult, from);
+                                select.setWhere(where);
+                                if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
+                                    System.out.println(select);
+                                    results.add(select);
                                 }
-                            }*/
+                            }
 
                         }
                     }
@@ -220,7 +233,7 @@ public class MakeFromState extends State{
                 operators.add("<");
                 operators.add("=");
             } else {
-                if (type.contains("varchar")) {
+                if (type.toLowerCase().contains("varchar")) {
                     operators.add("=");
                 }
             }
