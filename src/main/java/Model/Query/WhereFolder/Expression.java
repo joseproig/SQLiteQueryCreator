@@ -39,6 +39,6 @@ public class Expression extends WhereOperand {
     }
 
     public String toString () {
-        return expression.toString() + operator + expression_2.toString();
+        return expression.toString() + " " + operator + " " + expression_2.toString();
     }
 }

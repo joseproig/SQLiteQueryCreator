@@ -12,10 +12,7 @@ import Model.Query.WhereFolder.*;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MakeFromState extends State{
     //TODO: Doble relacions entre dos taules --> Ex: Treballador <--> Departament
@@ -178,38 +175,58 @@ public class MakeFromState extends State{
                             ColumnFilterOption columnFilterOption = (ColumnFilterOption) filterInSelect.getFilterOption1();
                             ColumnWhere columnWhere = new ColumnWhere(hashMapT1.get(columnFilterOption.getColumnRference()).getTableNameInFrom(), hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName());
 
-                            WhereOperand secondOperand = null;
+                            List<WhereOperand> secondOperands = new ArrayList<>();
                             if (t2 > 0) {
                                 HashMap<String, Columna> hashMapT2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()).get(indexes.get(t2));
                                 ColumnFilterOption columnFilterOption2 = (ColumnFilterOption) filterInSelect.getFilterOption2();
-                                secondOperand = new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName());
+                                secondOperands.add(new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName()));
 
                             } else {
                                 if (t2 == -1){
                                     LiteralValue columnFilterOption2 = (LiteralValue) filterInSelect.getFilterOption2();
                                     String typeColumnOne = hashMapT1.get(columnFilterOption.getColumnRference()).getType();
                                     if(typeColumnOne.equalsIgnoreCase("integer")){
-                                        secondOperand = new LiteralIntegerWhere(DBConnection.getInstance(null).generateRandomOfIntegerColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                        secondOperands.add(new LiteralIntegerWhere(DBConnection.getInstance(null).generateRandomOfIntegerColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName())));
                                     } else {
                                         if (typeColumnOne.equalsIgnoreCase("date")) {
-                                            secondOperand = new LiteralDateWhere(DBConnection.getInstance(null).generateRandomOfDateColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                            secondOperands.add(new LiteralDateWhere(DBConnection.getInstance(null).generateRandomOfDateColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName())));
                                         } else {
                                             if (typeColumnOne.toLowerCase().contains("varchar")) {
-                                                secondOperand = new LiteralVarcharWhere(DBConnection.getInstance(null).generateRandomOfVarcharColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName()));
+                                                secondOperands.add(new LiteralVarcharWhere(DBConnection.getInstance(null).generateRandomOfVarcharColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName())));
                                             }
                                         }
                                     }
                                 }
                             }
                             for (String operand: generatePossibleOperandsBetweenColumns(hashMapT1.get(columnFilterOption.getColumnRference()).getType())){
-                                Expression expression = new Expression(columnWhere,operand,secondOperand);
-                                Where where = new Where();
-                                where.addExpression(expression);
-                                Select select = new Select(columnsInSelectResult, from);
-                                select.setWhere(where);
-                                if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
-                                    System.out.println(select);
-                                    results.add(select);
+                                if (secondOperands.size() > 0 && operand.equals("LIKE") && secondOperands.get(0) instanceof LiteralVarcharWhere) {
+                                    LiteralVarcharWhere secondOperand = (LiteralVarcharWhere) secondOperands.get(0);
+                                    secondOperands.remove(0);
+                                    Random r = new Random();
+                                    if (secondOperand.getVarchar().length() > 5) {
+                                        secondOperands.add(new LiteralVarcharWhere(secondOperand.getVarchar().substring(0, r.nextInt(secondOperand.getVarchar().length() - 2) + 1) + "%"));
+                                        secondOperands.add(new LiteralVarcharWhere("%" + secondOperand.getVarchar().substring(r.nextInt(secondOperand.getVarchar().length() - 3))));
+                                        int num1 = r.nextInt(secondOperand.getVarchar().length() - 4) + 1; //73
+                                        int num2 = r.nextInt(secondOperand.getVarchar().length() - num1 - 1) + num1 + 1; //75-73-1 = 1 + 1 + 73
+                                        secondOperands.add(new LiteralVarcharWhere("%" + secondOperand.getVarchar().substring(num1,num2) + "%"));
+                                        StringBuilder stringBuilder = new StringBuilder(secondOperand.getVarchar());
+                                        stringBuilder.setCharAt(r.nextInt(secondOperand.getVarchar().length() - 1), '_');
+                                        secondOperands.add(new LiteralVarcharWhere(stringBuilder.toString()));
+                                    } else {
+                                        continue;
+                                    }
+                                    //((LiteralVarcharWhere)secondOperand).setVarchar(((LiteralVarcharWhere)secondOperand).getVarchar().substring(0, 2) + "%");
+                                }
+                                for (WhereOperand secondOperand:secondOperands) {
+                                    Expression expression = new Expression(columnWhere, operand, secondOperand);
+                                    Where where = new Where();
+                                    where.addExpression(expression);
+                                    Select select = new Select(columnsInSelectResult, from);
+                                    select.setWhere(where);
+                                    if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
+                                        System.out.println(select);
+                                        results.add(select);
+                                    }
                                 }
                             }
 
@@ -235,6 +252,7 @@ public class MakeFromState extends State{
             } else {
                 if (type.toLowerCase().contains("varchar")) {
                     operators.add("=");
+                    operators.add("LIKE");
                 }
             }
         }

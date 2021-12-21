@@ -75,7 +75,7 @@ public class DBConnection {
 
             return rs.next();
         } catch (SQLException throwables) {
-            //System.out.println("ERRORU!!!: " + query);
+            System.out.println("ERROR!!!: " + query);
             throwables.printStackTrace();
         }
         return false;
@@ -160,8 +160,7 @@ public class DBConnection {
             statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
             ResultSet rs = statement.executeQuery("SELECT " + columnName + " FROM " + tableName + " ORDER BY RANDOM() LIMIT 1");
-
-
+            
             if (rs.next()) {
                 return rs.getString(columnName);
             } else {
