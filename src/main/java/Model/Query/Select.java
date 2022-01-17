@@ -16,6 +16,12 @@ public class Select implements Cloneable{
         this.where = new Where();
     }
 
+    public Select(HashMap<String, ColumnaResult> columnaResult, From from, Where where) throws CloneNotSupportedException {
+        this.columnaResult = columnaResult;
+        this.from = from;
+        this.where = (Where) new Where(where.getExpression());
+    }
+
     public From getFrom() {
         return from;
     }

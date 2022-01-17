@@ -80,6 +80,7 @@ public class MakeFromState extends State{
             }
             boolean finished = false;
             indexes.set(0, -1);
+
             while(!finished) {
                 int i = 0;
                 indexes.set(0, indexes.get(0) + 1);
@@ -94,6 +95,7 @@ public class MakeFromState extends State{
                     }
                     i++;
                 }
+                ArrayList<Select> resultsOfOneCausistic = new ArrayList<>();
                 if (!finished) {
                     boolean combinationCorrectForResult = true;
                     for (FilterInSelect filterInSelect : filtersInSelect) {
@@ -143,15 +145,15 @@ public class MakeFromState extends State{
                                 columnsInSelectResult.put(columnInSelect.generateName(), newColumnaResult);
                             }
                         }
-
+                        boolean firstFilterInSelect =  true;
                         for (FilterInSelect filterInSelect : ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToFilterInSelect()) {
-                            int t1 = 0;
-                            int t2 = 0;
+                            int t1 = -2;
+                            int t2 = -2;
                             int h = 0;
                             for (String tableName : indexesString) {
                                 if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference())) {
                                     t1 = h;
-                                    if (t2 != 0) {
+                                    if (t2 != -2) {
                                         //Per no continuar iterant
                                         break;
                                     }
@@ -159,7 +161,7 @@ public class MakeFromState extends State{
                                 if (filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption")) {
                                     if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference())) {
                                         t2 = h;
-                                        if (t1 != 0) {
+                                        if (t1 != -2) {
                                             //Per no continuar iterant
                                             break;
                                         }
@@ -176,7 +178,7 @@ public class MakeFromState extends State{
                             ColumnWhere columnWhere = new ColumnWhere(hashMapT1.get(columnFilterOption.getColumnRference()).getTableNameInFrom(), hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName());
 
                             List<WhereOperand> secondOperands = new ArrayList<>();
-                            if (t2 > 0) {
+                            if (t2 >= 0) {
                                 HashMap<String, Columna> hashMapT2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()).get(indexes.get(t2));
                                 ColumnFilterOption columnFilterOption2 = (ColumnFilterOption) filterInSelect.getFilterOption2();
                                 secondOperands.add(new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName()));
@@ -198,6 +200,9 @@ public class MakeFromState extends State{
                                     }
                                 }
                             }
+                            //Si hi ha més d'una combinació s'hauran d'afegir resultats, fem això per evitar que en un mateix where apareguin combinacions de la mateix relacio
+                            int w = 0;
+                            ArrayList<Select> newResultsToAdd = new ArrayList<>();
                             for (String operand: generatePossibleOperandsBetweenColumns(hashMapT1.get(columnFilterOption.getColumnRference()).getType())){
                                 if (secondOperands.size() > 0 && operand.equals("LIKE") && secondOperands.get(0) instanceof LiteralVarcharWhere) {
                                     LiteralVarcharWhere secondOperand = (LiteralVarcharWhere) secondOperands.get(0);
@@ -217,24 +222,60 @@ public class MakeFromState extends State{
                                     }
                                     //((LiteralVarcharWhere)secondOperand).setVarchar(((LiteralVarcharWhere)secondOperand).getVarchar().substring(0, 2) + "%");
                                 }
-                                for (WhereOperand secondOperand:secondOperands) {
+
+                                for (WhereOperand secondOperand : secondOperands) {
                                     Expression expression = new Expression(columnWhere, operand, secondOperand);
-                                    Where where = new Where();
-                                    where.addExpression(expression);
-                                    Select select = new Select(columnsInSelectResult, from);
-                                    select.setWhere(where);
-                                    if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
-                                        System.out.println(select);
-                                        results.add(select);
+
+                                    if(firstFilterInSelect) {
+                                        Where where = new Where();
+                                        where.addExpression(expression);
+                                        Select select = new Select(columnsInSelectResult, from);
+                                        select.setWhere(where);
+                                        if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
+                                            resultsOfOneCausistic.add(select);
+                                        }
+                                    } else {
+                                        for (Select resultat : resultsOfOneCausistic) {
+                                            try {
+                                                //TODO: El where no es fa el clone be
+                                                Select selectToAdd = new Select(resultat.getColumnaResult(),resultat.getFrom(),resultat.getWhere());
+                                                Where where = (Where) selectToAdd.getWhere();
+                                                where.addExpression(expression);
+                                                selectToAdd.setWhere(where);
+                                                if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString())) {
+                                                    newResultsToAdd.add(selectToAdd);
+                                                }
+                                            } catch (CloneNotSupportedException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
                                     }
+                                    w++;
                                 }
                             }
-
+                            //Si a la primera iteracio no hem obtingut cap resultat no val la pena seguir
+                            if(firstFilterInSelect && resultsOfOneCausistic.size() == 0){
+                                break;
+                            } else {
+                                if (!firstFilterInSelect) {
+                                    resultsOfOneCausistic.clear();
+                                    resultsOfOneCausistic.addAll(newResultsToAdd);
+                                }
+                            }
+                            firstFilterInSelect = false;
                         }
+                        /*for (ColumnInSelect columnInSelect: ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToOrderBy()) {
+                            for (Select select: results) {
+
+                            }
+                        }*/
                     }
+                    results.addAll(resultsOfOneCausistic);
                 }
             }
-
+        }
+        for (Select select: results) {
+            System.out.println(select);
         }
     }
 
@@ -365,6 +406,28 @@ public class MakeFromState extends State{
             columnsForEachTable.put(entry.getKey(),array);
             for (ColumnInSelect c: entry.getValue()) {
                 array.add(c.getColumnReference());
+            }
+        }
+        for (ColumnInSelect columnInSelect: ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToOrderBy()) {
+            Integer numOfColumns = necessaryColumnsForEachTable.get(columnInSelect.getTableReference());
+            if (numOfColumns == null) {
+                Integer numOfColumnsRef = 1;
+                List<String> array = new ArrayList<>();
+                columnsForEachTable.put(columnInSelect.getTableReference(), array);
+                necessaryColumnsForEachTable.put(columnInSelect.getTableReference(), numOfColumnsRef);
+            } else {
+                boolean encountered = false;
+                for (String c2 : columnsForEachTable.get(columnInSelect.getTableReference())) {
+                    if (columnInSelect.getColumnReference().equals(c2)) {
+                        encountered = true;
+                        break;
+                    }
+                }
+                if (!encountered) {
+                    numOfColumns = necessaryColumnsForEachTable.get(columnInSelect.getTableReference()) + 1;
+                    columnsForEachTable.get(columnInSelect.getTableReference()).add(columnInSelect.getColumnReference());
+                    necessaryColumnsForEachTable.put(columnInSelect.getTableReference(), numOfColumns);
+                }
             }
         }
         for (Map.Entry<String, List<ColumnInSelect>> entry : ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion).getStructure().getColumnsToTakeIntoAccountInSelect().getTablesWithHisRespectiveColumns().entrySet()) {

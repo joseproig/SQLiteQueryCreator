@@ -5,11 +5,15 @@ import Model.Query.WhereFolder.Expression;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Where {
+public class Where implements Cloneable{
     private List<Expression> expressions;
 
     public Where() {
         this.expressions = new ArrayList<>();
+    }
+
+    public Where (List<Expression> expressions) {
+        this.expressions = new ArrayList<>(expressions);
     }
 
     public List<Expression> getExpression() {
@@ -34,5 +38,9 @@ public class Where {
             return where.toString();
         }
         return "";
+    }
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }

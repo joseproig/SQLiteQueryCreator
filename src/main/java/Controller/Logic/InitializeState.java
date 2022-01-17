@@ -58,6 +58,8 @@ public class InitializeState extends State {
         Pattern pat4 = Pattern.compile(regularExpression4);
         String regularExpression5 = "^(c[0-9]+_t[0-9]+)$";
         Pattern pat5 = Pattern.compile(regularExpression5);
+        String regularExpression6 = "^(c[0-9]+_t[0-9]+\\_o)$";
+        Pattern pat6 = Pattern.compile(regularExpression6);
 
         int i = 0;
         for (Question question: ProgramConfig.getInstance().getFilterParams().getQuestions()) {
@@ -67,7 +69,9 @@ public class InitializeState extends State {
                 if (!getColumnsToAppearInSelect (i,pat3,contentInKeys)) {
                     if (!getColumnsToTakeIntoAccount (i, pat5, contentInKeys)) {
                         if (!getTablesThatWillParticipateInSelect(i, pat4, contentInKeys)) {
-                            getFilterParams(i, contentInKeys, pat2);
+                            if (!getFilterParams(i, contentInKeys, pat2)) {
+                                getColumnsToOrderBy(i, pat6, contentInKeys);
+                            }
                         }
                     }
                 }
@@ -109,6 +113,19 @@ public class InitializeState extends State {
             String table = splits[1];
             ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToTakeIntoAccount(columnInSelect);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean getColumnsToOrderBy (int numberOfQuestion, Pattern pat6, String contentInKeys) {
+        Matcher matches6 = pat6.matcher(contentInKeys);
+        if (matches6.find()) {
+            String [] splits = matches6.group(0).split("_");
+            String column = splits [0];
+            String table = splits[1];
+            ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToOrderBy(columnInSelect);
             return true;
         }
         return false;

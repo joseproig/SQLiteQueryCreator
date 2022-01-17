@@ -11,7 +11,7 @@ public class Structure {
     private ColumnsInSelect columnsToSeeInSelect;
     private List<FilterInSelect> columnsToFilterInSelect;
     private List<String> tablesThatAppearInSelect;
-    private List<String> columnsToOrderBy;
+    private List<ColumnInSelect> columnsToOrderBy;
     private ColumnsInSelect columnsToTakeIntoAccountInSelect;
 
     public Structure() {
@@ -46,11 +46,11 @@ public class Structure {
         this.columnsToFilterInSelect = columnsToFilterInSelect;
     }
 
-    public List<String> getColumnsToOrderBy() {
+    public List<ColumnInSelect> getColumnsToOrderBy() {
         return columnsToOrderBy;
     }
 
-    public void setColumnsToOrderBy(List<String> columnsToOrderBy) {
+    public void setColumnsToOrderBy(List<ColumnInSelect> columnsToOrderBy) {
         this.columnsToOrderBy = columnsToOrderBy;
     }
 
@@ -66,8 +66,8 @@ public class Structure {
         columnsToFilterInSelect.add(filterInSelect);
     }
 
-    public void addColumnToOrderBy (String string) {
-        columnsToOrderBy.add(string);
+    public void addColumnToOrderBy (ColumnInSelect columnInSelect) {
+        columnsToOrderBy.add(columnInSelect);
     }
 
     public void addColumnToTakeIntoAccount (ColumnInSelect columnInSelect) {
