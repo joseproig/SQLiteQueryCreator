@@ -8,6 +8,7 @@ public class Select implements Cloneable{
     private HashMap<String, ColumnaResult> columnaResult;
     private From from;
     private Where where;
+    private Order order;
 
 
     public Select(HashMap<String, ColumnaResult> columnaResult, From from) {
@@ -46,10 +47,21 @@ public class Select implements Cloneable{
         this.columnaResult = columnaResult;
     }
 
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
     public String toString () {
         StringBuilder stringBuilder = new StringBuilder("SELECT " + stringifyColumns());
         stringBuilder.append(from.toString());
         stringBuilder.append(where.toString());
+        if (order != null) {
+            stringBuilder.append(order.toString());
+        }
         return stringBuilder.toString();
     }
 

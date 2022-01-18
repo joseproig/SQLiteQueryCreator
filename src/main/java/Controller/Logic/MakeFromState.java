@@ -51,6 +51,7 @@ public class MakeFromState extends State{
                 generateAllTablePossibilities(tablesOfTheQuestionThatEveryTableAdapts,possibleFormsOfOrganization,nameOfEveryTableInTablesOfTheQuestionThatEveryTableAdapts);
                 List<HashMap<String,List<HashMap<String, Columna>>>> possibleOrganizationsForOneQuestion = generateQueryWithDifferentPossibilities (possibleFormsOfOrganization,columnsForEachTable);
                 filterConditionsCheck(possibleOrganizationsForOneQuestion,Integer.parseInt(string), results, from);
+                //includeOrderByInResults(results);
             }
 
 
@@ -66,6 +67,36 @@ public class MakeFromState extends State{
             string = "" + numOfQuestion;
         }
         context.doStateFunction(string);
+    }
+
+    private void includeOrderByInResults (List <Select> results, int idQuestion, List<Integer> indexes, List<String> indexesString, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion) {
+
+        HashMap<String, Integer> hashmapWithIndexs = new HashMap<>();
+        int h = 0;
+        for (ColumnInSelect s : ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToOrderBy()) {
+            if (!hashmapWithIndexs.containsKey(s.getTableReference())) {
+                h = 0;
+                for (String tableName : indexesString) {
+                    if (tableName.equals(s.getTableReference())) {
+                        hashmapWithIndexs.put(s.getTableReference(),h);
+                        break;
+                    }
+                    h++;
+                }
+            }
+        }
+        //Anem guardant en una llista els diferents objectes que poden apareixer al Order By
+        List <ColumnWhere> columnsToIncludeInSelect = new ArrayList<>();
+        for (ColumnInSelect s : ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToOrderBy()) {
+            HashMap<String, Columna> hashMapWithColumnsOfTableToOrderBy = possibleOrganizationForOneQuestion.get(s.getTableReference()).get(indexes.get(hashmapWithIndexs.get(s.getTableReference())));
+            columnsToIncludeInSelect.add(new ColumnWhere(hashMapWithColumnsOfTableToOrderBy.get(s.getColumnReference()).getTableNameInFrom(), hashMapWithColumnsOfTableToOrderBy.get(s.getColumnReference()).getColumnName()));
+        }
+
+        //Anem resultat a resultat, que previament hauran passat pel WHERE, i generarem les diferents opcions de Order By
+        for (Select result : results) {
+            result.setOrder(new Order(columnsToIncludeInSelect));
+        }
+
     }
 
     private void filterConditionsCheck (List<HashMap<String,List<HashMap<String, Columna>>>> possibleOrganizationsForOneQuestion, int idQuestion, List <Select> results, From from) {
@@ -270,10 +301,12 @@ public class MakeFromState extends State{
                             }
                         }*/
                     }
+                    includeOrderByInResults (resultsOfOneCausistic, idQuestion, indexes,  indexesString,  possibleOrganizationForOneQuestion);
                     results.addAll(resultsOfOneCausistic);
                 }
             }
         }
+
         for (Select select: results) {
             System.out.println(select);
         }
