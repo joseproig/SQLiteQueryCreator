@@ -6,8 +6,10 @@ public class Columna {
     private String tableNameInFrom;
     private String type;
     private Boolean isFK;
+    private Boolean isPK;
     private String tableReference;
     private String columnReference;
+
 
 
     public String getTableNameInFrom() {
@@ -64,5 +66,13 @@ public class Columna {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public Boolean getPK() {
+        return isPK;
+    }
+
+    public void setPK(int isPK) {
+        this.isPK = isPK == 1;
     }
 }

@@ -268,12 +268,14 @@ public class MakeFromState extends State{
                                     } else {
                                         for (Select resultat : resultsOfOneCausistic) {
                                             try {
-                                                //TODO: El where no es fa el clone be
                                                 Select selectToAdd = new Select(resultat.getColumnaResult(),resultat.getFrom(),resultat.getWhere());
                                                 Where where = (Where) selectToAdd.getWhere();
                                                 where.addExpression(expression);
                                                 selectToAdd.setWhere(where);
-                                                if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString())) {
+                                                //Fem la comprovacio de la inversa per descartar queryes que no te sentit fer el WHERE
+                                                Select inverseSelectToAdd = new Select(resultat.getColumnaResult(),resultat.getFrom(),(Where)resultat.getWhere().clone());
+                                                inverseSelectToAdd.getWhere().setNegateExpression(true);
+                                                if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
                                                 }
                                             } catch (CloneNotSupportedException e) {
@@ -345,21 +347,24 @@ public class MakeFromState extends State{
                     List<HashMap<String, Columna>> newResultsToAdd = new ArrayList<>();
                     List<String> columns = necessaryColumnsForEachTable.get(tableRelation.getKey());
                     for (Map.Entry<String, Columna> columna : t1.getColumnes().entrySet()) {
-                        for (String columnReference : columns) {
-                            List<HashMap<String, Columna>> subArrayResultsToAdd = new ArrayList<>();
-                            for (HashMap<String,Columna> newResultToAdd: newResultsToAdd) {
-                                if (!newResultToAdd.containsKey(columnReference)){
-                                    if (!checkIfColumnExistInPossibleResult (newResultToAdd,columna.getValue().getColumnName())) {
-                                        HashMap<String, Columna> shallowCopy = new HashMap<String, Columna>(newResultToAdd);
-                                        shallowCopy.put(columnReference,columna.getValue());
-                                        subArrayResultsToAdd.add(shallowCopy);
+                        //NEW: Només incloem en el resultat aquelles columnes que no siguin pk o fk
+                        if (!columna.getValue().getPK() && (columna.getValue().getFK() == null || !columna.getValue().getFK())) {
+                            for (String columnReference : columns) {
+                                List<HashMap<String, Columna>> subArrayResultsToAdd = new ArrayList<>();
+                                for (HashMap<String, Columna> newResultToAdd : newResultsToAdd) {
+                                    if (!newResultToAdd.containsKey(columnReference)) {
+                                        if (!checkIfColumnExistInPossibleResult(newResultToAdd, columna.getValue().getColumnName())) {
+                                            HashMap<String, Columna> shallowCopy = new HashMap<String, Columna>(newResultToAdd);
+                                            shallowCopy.put(columnReference, columna.getValue());
+                                            subArrayResultsToAdd.add(shallowCopy);
+                                        }
                                     }
                                 }
+                                HashMap<String, Columna> newHashmapToAdd = new HashMap<>();
+                                newHashmapToAdd.put(columnReference, columna.getValue());
+                                newResultsToAdd.add(newHashmapToAdd);
+                                newResultsToAdd.addAll(subArrayResultsToAdd);
                             }
-                            HashMap<String,Columna> newHashmapToAdd = new HashMap<>();
-                            newHashmapToAdd.put(columnReference,columna.getValue());
-                            newResultsToAdd.add(newHashmapToAdd);
-                            newResultsToAdd.addAll(subArrayResultsToAdd);
                         }
                     }
                     //Podem aquells resultats que no ens interessen
@@ -606,9 +611,12 @@ public class MakeFromState extends State{
     private List<ColumnaResult> columnsOfOneTable (String realnameOfTable, String nameOfTable) {
         List<ColumnaResult> columnaResults = new ArrayList<>();
         for (String columnaKey : TablesData.getInstance().getTaules().get(realnameOfTable).getColumnes().keySet()) {
+            //NEW: Aquest if el que aconsegueix es que les primary keys no es tinguin amb compte
             Columna columna = TablesData.getInstance().getTaules().get(realnameOfTable).getColumnes().get(columnaKey);
-            ColumnaResult columnaResult = new ColumnaResult(columna,nameOfTable);
-            columnaResults.add(columnaResult);
+            if (!columna.getPK() && (columna.getFK() == null || !columna.getFK())) {
+                ColumnaResult columnaResult = new ColumnaResult(columna, nameOfTable);
+                columnaResults.add(columnaResult);
+            }
         }
         return columnaResults;
     }

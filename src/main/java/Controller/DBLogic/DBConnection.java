@@ -94,6 +94,7 @@ public class DBConnection {
                 Columna columna = new Columna();
                 columna.setTableName(table);
                 columna.setColumnName(rs.getString("name"));
+                columna.setPK(rs.getInt("pk"));
                 columna.setType(rs.getString("type"));
                 columnes.put(columna.getColumnName(),columna);
             }

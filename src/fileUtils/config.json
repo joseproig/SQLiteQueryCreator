@@ -1,10 +1,10 @@
 {
-  "dbPath": "/Users/joseproigtorres/Desktop/TFG_Data/2021_LAB4_DB.db",
+  "dbPath": "/Users/joseproigtorres/Desktop/TFG_Data/AC3.db",
   "filterParams": {
     "questions": [
       {
-        "question":"List the name {C2_T1_S} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==c1_t2}  {c1_t2==c2_t1} to the name {C1_T3_S} of a student {T3}, an order by {C2_T1_O}, {C1_T3_O}",
-        "maxNumTables": 3
+        "question":"List the name {C2_T1_S} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==c1_t2}  {c1_t2==c1_t3} to the name {C1_T3} of a student {T3}, an order by {C2_T1_O}, {C1_T3_O}",
+        "maxNumTables": 4
       }
     ]
   }

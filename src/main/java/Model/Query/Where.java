@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Where implements Cloneable{
     private List<Expression> expressions;
+    private Boolean negateExpression = false;
 
     public Where() {
         this.expressions = new ArrayList<>();
@@ -28,13 +29,27 @@ public class Where implements Cloneable{
         expressions.add(expression);
     }
 
+    public Boolean getNegateExpression() {
+        return negateExpression;
+    }
+
+    public void setNegateExpression(Boolean negateExpression) {
+        this.negateExpression = negateExpression;
+    }
+
     public String toString () {
         if (expressions.size() != 0) {
             StringBuilder where = new StringBuilder(" WHERE ");
+            if (negateExpression) {
+                where.append("NOT (");
+            }
             for (int j = 0; j < (expressions.size() - 1); j++) {
                 where.append(expressions.get(j).toString()).append(" AND ");
             }
             where.append(expressions.get(expressions.size() - 1));
+            if (negateExpression) {
+                where.append(")");
+            }
             return where.toString();
         }
         return "";
