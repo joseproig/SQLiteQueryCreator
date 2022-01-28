@@ -56,8 +56,7 @@ public class MakeFromState extends State{
 
 
         }
-        System.out.println("----------------------------------------------------------------------------");
-        TablesData.getInstance().setPossibleQueries(results);
+        TablesData.getInstance().addNewListOfPossibleQueries(results);
 
         int numOfQuestion = Integer.parseInt(string) + 1;
         if (numOfQuestion == ProgramConfig.getInstance().getFilterParams().getQuestions().size()) {

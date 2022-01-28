@@ -37,6 +37,10 @@ public class DBConnection {
         return instance;
     }
 
+    public String getPathFile() {
+        return pathFile;
+    }
+
     public HashMap<String, Taula> showTables (HashMap<Integer,Taula> taulesById){
         Statement statement = null;
         try {
@@ -171,6 +175,15 @@ public class DBConnection {
             throwables.printStackTrace();
         }
         return null;
+    }
+
+
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -18,7 +18,7 @@ public class EStudyXML {
         root = new Element("quiz");
     }
 
-    public void addQuestion (String questionName, String question, String solution, String answer) {
+    public void addQuestion (String questionName, String question, String solution, String answer, String fileEncodedInBase64) {
         Element questionToAdd = new Element("question");
         questionToAdd.setAttribute("type", "coderunner");
 
@@ -80,7 +80,93 @@ public class EStudyXML {
 
         addElement (questionToAdd, "allowmultiplestdins", " ");
 
-        addElement (questionToAdd, "answer", solution);
+        addElement (questionToAdd, "answer",  solution);
+
+        addElement(questionToAdd, "validateonsave"," ");
+
+        addElement(questionToAdd, "testsplitterre"," ");
+
+        addElement(questionToAdd, "language"," ");
+
+        addElement(questionToAdd, "acelang"," ");
+
+        addElement(questionToAdd, "sandbox"," ");
+
+        addElement(questionToAdd, "grader"," ");
+
+        addElement(questionToAdd, "cputimelimitsecs"," ");
+
+        addElement(questionToAdd, "memlimitmb"," ");
+
+        addElement(questionToAdd, "sandboxparams"," ");
+
+        addElement(questionToAdd, "templateparams"," ");
+
+        addElement(questionToAdd, "hoisttemplateparams","1");
+
+        addElement(questionToAdd, "templateparamslang","twig");
+
+        addElement(questionToAdd, "templateparamsevalpertry","1");
+
+        addElement(questionToAdd, "templateparamsevald","{}");
+
+        addElement(questionToAdd, "twigall","0");
+
+        addElement(questionToAdd, "uiplugin"," ");
+
+        addElement(questionToAdd, "uiparameters"," ");
+
+        addElement(questionToAdd, "attachments","0");
+
+        addElement(questionToAdd, "attachmentsrequired","0");
+
+        addElement(questionToAdd, "maxfilesize","10240");
+
+        addElement(questionToAdd, "filenamesregex"," ");
+
+        addElement(questionToAdd, "filenamesexplain"," ");
+
+        addElement(questionToAdd, "displayfeedback","1");
+
+        Element testCases = new Element("testcases");
+
+        Element testCase = new Element("testcase");
+        testCase.setAttribute("testtype","0");
+        testCase.setAttribute("useasexample","0");
+        testCase.setAttribute("hiderestiffail","0");
+        testCase.setAttribute("mark","1.0000000");
+        testCases.addContent(testCase);
+        Element testCode = new Element("testcode");
+        Element text = new Element("text");
+        testCode.addContent(text);
+        testCase.addContent(testCode);
+        Element stdin = new Element("stdin");
+        Element text2 = new Element("text");
+        stdin.addContent(text2);
+        testCase.addContent(stdin);
+        Element expected = new Element("expected");
+        Element textResult = new Element("text");
+        textResult.addContent(answer);
+        expected.addContent(textResult);
+        testCase.addContent(expected);
+        Element extra = new Element("extra");
+        Element text3 = new Element("text");
+        extra.addContent(text3);
+        testCase.addContent(extra);
+        Element display = new Element("display");
+        Element textShow = new Element("show");
+        textShow.addContent("DISPLAY");
+        display.addContent(textShow);
+        testCase.addContent(display);
+
+        Element file = new Element("file");
+        file.setAttribute("name","database.db");
+        file.setAttribute("path","/");
+        file.setAttribute("encoding","base64");
+        file.addContent(fileEncodedInBase64);
+        testCases.addContent(file);
+
+        questionToAdd.addContent(testCases);
 
         root.addContent(questionToAdd);
     }

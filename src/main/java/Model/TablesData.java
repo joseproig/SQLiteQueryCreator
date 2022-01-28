@@ -3,6 +3,7 @@ package Model;
 import Model.Query.Select;
 
 import javax.management.Query;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public final class TablesData {
     private HashMap <Long, short[]> caminsFiltrats;
     private HashMap <Integer, Taula> taulesById;
     private HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
-    private List<Select> possibleQueries;
+    private List<List<Select>> possibleQueries = new ArrayList<>();
 
     private TablesData() {}
 
@@ -87,15 +88,15 @@ public final class TablesData {
         this.taulesById = taulesById;
     }
 
-    public List<Select> getPossibleQueries() {
+    public List<List<Select>> getPossibleQueries() {
         return possibleQueries;
     }
 
-    public void setPossibleQueries(List<Select> possibleQueries) {
+    public void setPossibleQueries(List<List<Select>> possibleQueries) {
         this.possibleQueries = possibleQueries;
     }
 
-    public void addPossibleQuery (Select select) {
-        possibleQueries.add(select);
+    public void addNewListOfPossibleQueries (List<Select> possibleQueriesToAdd) {
+        possibleQueries.add(possibleQueriesToAdd);
     }
 }
