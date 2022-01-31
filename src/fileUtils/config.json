@@ -3,7 +3,7 @@
   "filterParams": {
     "questions": [
       {
-        "question":"List the name {C2_T1_S} {C1_T1_S} of the subjects {T1} whose professor {C2_T1} is equal {c2_t1==c1_t2}  {c1_t2==c1_t3} to the name {C1_T3} of a student {T3}, an order by {C2_T1_O}, {C1_T3_O}",
+        "question":"List the {C2_T1_S} and the {C1_T1_S} of the {T1} whose {C2_T1} is {c2_t1==c1_t2} and {c1_t2==c1_t3} to the {C1_T3} of a {T3}, an order by {C2_T1_O} and {C1_T3_O}",
         "maxNumTables": 4
       }
     ]

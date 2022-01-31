@@ -17,6 +17,7 @@ public class GenerateXML extends State {
     void doYourFunction(String string) throws IOException {
         EStudyXML eStudyXML = new EStudyXML();
         int numQuestion  = 1;
+        int numQuestionInEstudy = 1;
         //Tanquem la connexio a la BBDD ja que no la necessitarem per més.
         DBConnection.getInstance("").closeConnection();
         for (Question question : ProgramConfig.getInstance().getFilterParams().getQuestions()) {
@@ -24,7 +25,12 @@ public class GenerateXML extends State {
                 for(Select selectToAddInXML : TablesData.getInstance().getPossibleQueries().get(numQuestion-1)) {
                     //ProcessBuilder builder = new ProcessBuilder("sqlite3", ".open " + DBConnection.getInstance("").getPathFile(),".mode column",TablesData.getInstance().getPossibleQueries().get(numQuestion-1).get(0).toString());
                     StringBuilder answer = new StringBuilder("");
-                    ProcessBuilder builder = new ProcessBuilder("sqlite3", "", ".open " + DBConnection.getInstance("").getPathFile(), ".mode column", selectToAddInXML.toString() + ";", ".exit");
+                    //Hem de ficar la width minima de 10 en les columnes que es vaiguin a mostrar
+                    StringBuilder widthCommand = new StringBuilder(".width");
+                    for (String var:selectToAddInXML.getColumnaResult().keySet()) {
+                        widthCommand.append(" 10");
+                    }
+                    ProcessBuilder builder = new ProcessBuilder("sqlite3", "", ".open " + DBConnection.getInstance("").getPathFile(), ".mode column",widthCommand.toString(), selectToAddInXML.toString() + ";", ".exit");
 
                     builder.redirectErrorStream(true);
                     Process p = builder.start();
@@ -34,7 +40,8 @@ public class GenerateXML extends State {
                     while ((line = reader.readLine()) != null) {
                         answer.append(line).append("\n");
                     }
-                    eStudyXML.addQuestion("Pregunta " + numQuestion, question.getQuestion(), selectToAddInXML.toString(), answer.toString(), Base64Encode.encodeFileToBase64Binary(DBConnection.getInstance("").getPathFile()));
+                    eStudyXML.addQuestion("Pregunta " + numQuestionInEstudy, question.getQuestion(), selectToAddInXML.toString(), answer.toString(), Base64Encode.encodeFileToBase64Binary(DBConnection.getInstance("").getPathFile()));
+                    numQuestionInEstudy++;
                 }
 
             } else {
