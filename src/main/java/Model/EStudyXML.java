@@ -34,7 +34,7 @@ public class EStudyXML {
         questionToAdd.addContent(questionText);
 
         //Default settings
-        Element generalFeedback = new Element("generalFeedback");
+        Element generalFeedback = new Element("generalfeedback");
         generalFeedback.setAttribute("type","html");
         addElement (generalFeedback, "text", "");
         questionToAdd.addContent(generalFeedback);
@@ -82,7 +82,7 @@ public class EStudyXML {
 
         addElement (questionToAdd, "answer",  solution);
 
-        addElement(questionToAdd, "validateonsave"," ");
+        addElement(questionToAdd, "validateonsave","1");
 
         addElement(questionToAdd, "testsplitterre"," ");
 
@@ -137,9 +137,8 @@ public class EStudyXML {
         testCase.setAttribute("mark","1.0000000");
         testCases.addContent(testCase);
         Element testCode = new Element("testcode");
-        Element text = new Element("text");
-        testCode.addContent(text);
-        testCase.addContent(testCode);
+        addElement(testCode, "text","");
+
         Element stdin = new Element("stdin");
         Element text2 = new Element("text");
         stdin.addContent(text2);
@@ -154,9 +153,7 @@ public class EStudyXML {
         extra.addContent(text3);
         testCase.addContent(extra);
         Element display = new Element("display");
-        Element textShow = new Element("show");
-        textShow.addContent("DISPLAY");
-        display.addContent(textShow);
+        addElement(display,"text","SHOW");
         testCase.addContent(display);
 
         Element file = new Element("file");
