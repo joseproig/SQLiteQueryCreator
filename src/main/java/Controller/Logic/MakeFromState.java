@@ -6,13 +6,16 @@ import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
 import Model.ParametersOfQuestion.FilterOptions.FilterOption;
 import Model.ParametersOfQuestion.FilterOptions.LiteralValue;
+import Model.ParametersOfQuestion.Question;
 import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
+import Model.ParametersOfQuestion.SelectFolder.ColumnsInSelect;
 import Model.Query.*;
 import Model.Query.WhereFolder.*;
 
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class MakeFromState extends State{
     //TODO: Doble relacions entre dos taules --> Ex: Treballador <--> Departament
@@ -276,6 +279,7 @@ public class MakeFromState extends State{
                                                 inverseSelectToAdd.getWhere().setNegateExpression(true);
                                                 if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
+                                                    generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,selectToAdd);
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -653,4 +657,124 @@ public class MakeFromState extends State{
 
     }
 
+    private String changeTextOfColumnsInSelectObjects (String question, ColumnsInSelect columnsInSelect, String regexPattern, Question questionStructure,HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString) {
+        for (String key : columnsInSelect.getTablesWithHisRespectiveColumns().keySet()) {
+            for (ColumnInSelect columnInSelect: columnsInSelect.getTablesWithHisRespectiveColumns().get(key)){
+                List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(columnInSelect.getTableReference());
+                int i=0;
+                for (String s: indexesString) {
+                    if (s.equals(columnInSelect.getTableReference())){
+                        break;
+                    }
+                    i++;
+                }
+                HashMap<String, Columna> actualCombination = optionsOfOneTable.get(i);
+
+                question = question.replaceAll("(?i)"+ regexPattern.replace("?c",columnInSelect.getColumnReference()).replace("?t", columnInSelect.getTableReference()), optionsOfOneTable.get(indexes.get(i)).get(columnInSelect.getColumnReference()).getColumnName().replace("_"," "));
+                question = question.replaceAll("(?i)"+ "\\{" + columnInSelect.getTableReference() + "\\}", optionsOfOneTable.get(i).get(columnInSelect.getColumnReference()).getTableName());
+            }
+        }
+        return question;
+    }
+
+    private String changeTextOfFilterCheck (List<FilterInSelect> filtersInSelect, String question, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, Select select) {
+        for (FilterInSelect filterInSelect : filtersInSelect) {
+
+            int i = 0;
+            int t1 = -1;
+            int t2 = -1;
+            for (String s : indexesString) {
+                if (filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption") && ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference().equals(s)) {
+                    t1 = i;
+                } else {
+                    if (!filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption")) {
+                        t1 = -2;
+                    }
+                }
+                if (filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption") && ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference().equals(s)) {
+                    t2 = i;
+                } else {
+                    if (!filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption")) {
+                        t1 = -2;
+                    }
+                }
+                if (t1 != -1 && t2 != -1) {
+                    break;
+                }
+                i++;
+            }
+            String textComparacio =  "";
+            if (t1 != -2 && t2 == -2) {
+                List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference());
+                //Busquem el simbol de la operació i adjuntem text de comparacio
+                for (Expression expression : select.getWhere().getExpression()) {
+                    if (((ColumnWhere)expression.getExpression()).getColumna().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) {
+                        if (expression.getOperator().equalsIgnoreCase("equals") || expression.getOperator().equals("=")) {
+                            textComparacio = " is equal to the ";
+                        }
+                        else {
+                            if (expression.getOperator().equalsIgnoreCase(">")) {
+                                textComparacio = " is greater than ";
+                            } else {
+                                if (expression.getOperator().equals("<")) {
+                                    textComparacio = " is less than ";
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                question = question.replaceFirst("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)literal\\}", optionsOfOneTable.get(t1).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + "100");
+                question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableName());
+            } else {
+                if (t1 != -2 && t2 != -2) {
+                    List<HashMap<String, Columna>> optionsOfOneTable1 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference());
+                    List<HashMap<String, Columna>> optionsOfOneTable2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference());
+                    //Busquem operador:
+                    for (Expression expression : select.getWhere().getExpression()) {
+                        if ((((ColumnWhere)expression.getExpression()).getColumna().equals(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equals(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) && (((ColumnWhere)expression.getExpression_2()).getColumna().equals(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression_2()).getNomTaula().equals(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getTableNameInFrom()))) {
+                            if (expression.getOperator().equalsIgnoreCase("equals") || expression.getOperator().equals("=")) {
+                                textComparacio = " is equal to the ";
+                            }
+                            else {
+                                if (expression.getOperator().equalsIgnoreCase(">")) {
+                                    textComparacio = " is greater than ";
+                                } else {
+                                    if (expression.getOperator().equals("<")) {
+                                        textComparacio = " is less than ";
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+
+                    question = question.replaceAll("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)(" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference() + ")\\}", optionsOfOneTable1.get(t1).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + optionsOfOneTable2.get(t2).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName().replace("_"," "));
+                    question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableName());
+                    question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getTableName());
+                }
+            }
+
+
+        }
+        return question;
+    }
+
+    private String generateTextForSolution (HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int actualQuestion, Select select) {
+        //A possibleOrganizationForOneQuestion tens les possibles organitzacions, i a indexesString tens el nom de cada taula, en relacio a indexes, on tens quina combinacio usar en cada taula.
+        //Mirar que fer amb les literals!!
+        Question questionStructure = ProgramConfig.getInstance().getFilterParams().getQuestions().get(actualQuestion);
+        String question = questionStructure.getQuestion();
+        // questionStructure.getStructure().getColumnsToSeeInSelect()
+        question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToSeeInSelect(), "\\{?c\\_?t\\_s\\}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
+        question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToTakeIntoAccountInSelect(), "\\{?c\\_?t}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
+        question = changeTextOfFilterCheck (questionStructure.getStructure().getColumnsToFilterInSelect(), question, possibleOrganizationForOneQuestion,indexes,  indexesString, select);
+
+
+
+        System.out.println(question);
+        return "";
+    }
 }

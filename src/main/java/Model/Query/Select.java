@@ -9,6 +9,7 @@ public class Select implements Cloneable{
     private From from;
     private Where where;
     private Order order;
+    private String question;
 
 
     public Select(HashMap<String, ColumnaResult> columnaResult, From from) {
@@ -86,5 +87,13 @@ public class Select implements Cloneable{
     public Object clone() throws CloneNotSupportedException
     {
         return super.clone();
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
     }
 }
