@@ -17,6 +17,7 @@ import retrofit2.Response;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -211,13 +212,13 @@ public class MakeFromState extends State{
                             }
                             HashMap<String, Columna> hashMapT1 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference()).get(indexes.get(t1));
                             ColumnFilterOption columnFilterOption = (ColumnFilterOption) filterInSelect.getFilterOption1();
-                            ColumnWhere columnWhere = new ColumnWhere(hashMapT1.get(columnFilterOption.getColumnRference()).getTableNameInFrom(), hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName());
+                            ColumnWhere columnWhere = new ColumnWhere(hashMapT1.get(columnFilterOption.getColumnRference()).getTableNameInFrom(), hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(), ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference(), ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference());
 
                             List<WhereOperand> secondOperands = new ArrayList<>();
                             if (t2 >= 0) {
                                 HashMap<String, Columna> hashMapT2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()).get(indexes.get(t2));
                                 ColumnFilterOption columnFilterOption2 = (ColumnFilterOption) filterInSelect.getFilterOption2();
-                                secondOperands.add(new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName()));
+                                secondOperands.add(new ColumnWhere(hashMapT2.get(columnFilterOption2.getColumnRference()).getTableNameInFrom(), hashMapT2.get(columnFilterOption2.getColumnRference()).getColumnName(), ((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference(), ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()));
 
                             } else {
                                 if (t2 == -1){
@@ -287,6 +288,7 @@ public class MakeFromState extends State{
                                                     if (responseFromEQSPlain != null) {
                                                         selectToAdd.getQuestions().addAll(responseFromEQSPlain);
                                                     }
+                                                    //callLogosToGenerateTextsForSolution (selectToAdd);
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -690,6 +692,7 @@ public class MakeFromState extends State{
             int i = 0;
             int t1 = -1;
             int t2 = -1;
+
             for (String s : indexesString) {
                 if (filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption") && ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference().equals(s)) {
                     t1 = i;
@@ -715,7 +718,7 @@ public class MakeFromState extends State{
                 List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference());
                 //Busquem el simbol de la operació i adjuntem text de comparacio
                 for (Expression expression : select.getWhere().getExpression()) {
-                    if (((ColumnWhere)expression.getExpression()).getColumna().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) {
+                    if (((ColumnWhere)expression.getExpression()).getNomColumnaEnunciat().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaulaEnunciat().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) {
                         if (expression.getOperator().equalsIgnoreCase("equals") || expression.getOperator().equals("=")) {
                             textComparacio = " is equal to the ";
                         }
@@ -740,7 +743,8 @@ public class MakeFromState extends State{
                     List<HashMap<String, Columna>> optionsOfOneTable2 = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference());
                     //Busquem operador:
                     for (Expression expression : select.getWhere().getExpression()) {
-                        if ((((ColumnWhere)expression.getExpression()).getColumna().equals(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equals(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) && (((ColumnWhere)expression.getExpression_2()).getColumna().equals(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression_2()).getNomTaula().equals(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getTableNameInFrom()))) {
+                        String s = optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName();
+                        if ((((ColumnWhere)expression.getExpression()).getColumna().equalsIgnoreCase(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equalsIgnoreCase(optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) && (((ColumnWhere)expression.getExpression_2()).getColumna().equalsIgnoreCase(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression_2()).getNomTaula().equalsIgnoreCase(optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getTableNameInFrom()))) {
                             if (expression.getOperator().equalsIgnoreCase("equals") || expression.getOperator().equals("=")) {
                                 textComparacio = " is equal to the ";
                             }
@@ -758,7 +762,7 @@ public class MakeFromState extends State{
                     }
 
 
-                    question = question.replaceAll("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)(" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference() + ")\\}", optionsOfOneTable1.get(t1).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + optionsOfOneTable2.get(t2).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName().replace("_"," "));
+                    question = question.replaceAll("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)(" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference() + ")\\}", optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getColumnName().replace("_"," "));
                     question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable1.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableName());
                     question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable2.get(indexes.get(t2)).get(((ColumnFilterOption) filterInSelect.getFilterOption2()).getColumnRference()).getTableName());
                 }
@@ -817,5 +821,24 @@ public class MakeFromState extends State{
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void callLogosToGenerateTextsForSolution (Select select) {
+        Process proc = null;
+        String ipDirectionAndPort = "localhost:5432";
+        String database = "dbname"; // Database name
+        String username = "username";
+        String password = "bds76atrwufhsn";
+        String dbType = "PSQL"; // or MySQL
+        String[] dbSchemas = { "public"};
+        try {
+            proc = Runtime.getRuntime().exec("java -jar src/fileUtils/logos.jar " + select.toString() + " " + ipDirectionAndPort + " " + database + " " + username + " " + password + " " + dbType + " " + dbSchemas[0]);
+
+            InputStream in = proc.getInputStream();
+            InputStream err = proc.getErrorStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
