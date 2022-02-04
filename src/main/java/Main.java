@@ -18,6 +18,6 @@ public class Main {
 
         //TODO: Resposta per descartar solucions repetides fer Hashmap de ids de les taules ordenats
         System.out.println("El programa ha finalitzat");
-        System.exit(0);
+        //System.exit(0);
     }
 }
