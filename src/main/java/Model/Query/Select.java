@@ -2,26 +2,30 @@ package Model.Query;
 
 import Model.Columna;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Select implements Cloneable{
     private HashMap<String, ColumnaResult> columnaResult;
     private From from;
     private Where where;
     private Order order;
-    private String question;
+    private List<String> questions;
 
 
     public Select(HashMap<String, ColumnaResult> columnaResult, From from) {
         this.columnaResult = columnaResult;
         this.from = from;
         this.where = new Where();
+        this.questions = new ArrayList<>();
     }
 
     public Select(HashMap<String, ColumnaResult> columnaResult, From from, Where where) throws CloneNotSupportedException {
         this.columnaResult = columnaResult;
         this.from = from;
         this.where = (Where) new Where(where.getExpression());
+        this.questions = new ArrayList<>();
     }
 
     public From getFrom() {
@@ -89,11 +93,25 @@ public class Select implements Cloneable{
         return super.clone();
     }
 
-    public String getQuestion() {
-        return question;
+    public List<String> getQuestions() {
+        return questions;
     }
 
-    public void setQuestion(String question) {
-        this.question = question;
+    public void setQuestion(List<String> question) {
+        this.questions = question;
+    }
+
+    public void addQuestion (String questionToAdd) {
+        this.questions.add(questionToAdd);
+    }
+
+    public String printAllQuestions () {
+        int i = 1;
+        StringBuilder questionsString = new StringBuilder("");
+        for (String question:questions) {
+            questionsString.append(i).append(".").append(question).append("\n");
+            i++;
+        }
+        return questionsString.toString();
     }
 }

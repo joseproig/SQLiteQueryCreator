@@ -1,7 +1,9 @@
 package Controller.Logic;
 
+import Controller.Communication.EQSplainClient;
 import Controller.DBLogic.DBConnection;
 import Model.*;
+import Model.EQSPlain.ResponseEqsPlain;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
 import Model.ParametersOfQuestion.FilterOptions.FilterOption;
@@ -11,6 +13,7 @@ import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
 import Model.ParametersOfQuestion.SelectFolder.ColumnsInSelect;
 import Model.Query.*;
 import Model.Query.WhereFolder.*;
+import retrofit2.Response;
 
 
 import java.io.IOException;
@@ -279,7 +282,11 @@ public class MakeFromState extends State{
                                                 inverseSelectToAdd.getWhere().setNegateExpression(true);
                                                 if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
-                                                    generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,selectToAdd);
+                                                    selectToAdd.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,selectToAdd));
+                                                    List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(selectToAdd);
+                                                    if (responseFromEQSPlain != null) {
+                                                        selectToAdd.getQuestions().addAll(responseFromEQSPlain);
+                                                    }
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -762,6 +769,24 @@ public class MakeFromState extends State{
         return question;
     }
 
+    private String changeTextOfOrderBy (List<ColumnInSelect> columnsInSelects, String question, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString){
+        for (ColumnInSelect columnInSelect: columnsInSelects){
+            List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(columnInSelect.getTableReference());
+            int i=0;
+            for (String s: indexesString) {
+                if (s.equals(columnInSelect.getTableReference())){
+                    break;
+                }
+                i++;
+            }
+            HashMap<String, Columna> actualCombination = optionsOfOneTable.get(i);
+
+            question = question.replaceAll("(?i)\\{" + columnInSelect.getColumnReference() + "_" + columnInSelect.getTableReference() + "_o\\}", optionsOfOneTable.get(indexes.get(i)).get(columnInSelect.getColumnReference()).getColumnName().replace("_"," "));
+            question = question.replaceAll("(?i)"+ "\\{" + columnInSelect.getTableReference() + "\\}", optionsOfOneTable.get(i).get(columnInSelect.getColumnReference()).getTableName());
+        }
+        return question;
+    }
+
     private String generateTextForSolution (HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int actualQuestion, Select select) {
         //A possibleOrganizationForOneQuestion tens les possibles organitzacions, i a indexesString tens el nom de cada taula, en relacio a indexes, on tens quina combinacio usar en cada taula.
         //Mirar que fer amb les literals!!
@@ -771,10 +796,26 @@ public class MakeFromState extends State{
         question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToSeeInSelect(), "\\{?c\\_?t\\_s\\}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
         question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToTakeIntoAccountInSelect(), "\\{?c\\_?t}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
         question = changeTextOfFilterCheck (questionStructure.getStructure().getColumnsToFilterInSelect(), question, possibleOrganizationForOneQuestion,indexes,  indexesString, select);
+        question = changeTextOfOrderBy ( questionStructure.getStructure().getColumnsToOrderBy(), question,  possibleOrganizationForOneQuestion, indexes, indexesString);
 
 
+        return question;
+    }
 
-        System.out.println(question);
-        return "";
+    private List<String> callEQSPlainToGenerateMoreTextsForSolution (Select select) {
+        try {
+            List<String> responses = new ArrayList<>();
+            Response<ResponseEqsPlain> responseEqsPlain = EQSplainClient.getInstance().getListOfQuestionsForOneQuery(select.toString(),"database",5).execute();
+            if (responseEqsPlain.isSuccessful()) {
+                ResponseEqsPlain textsEQSPlain = responseEqsPlain.body();
+                responses.addAll(textsEQSPlain.getExplanations());
+            } else{
+                System.out.println("EQSPlain no ha pogut resoldre una de les querys generades");
+            }
+            return responses;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -40,7 +40,7 @@ public class GenerateXML extends State {
                     while ((line = reader.readLine()) != null) {
                         answer.append(line).append("\n");
                     }
-                    eStudyXML.addQuestion("Pregunta " + numQuestionInEstudy, question.getQuestion(), selectToAddInXML.toString(), answer.toString(), Base64Encode.encodeFileToBase64Binary(DBConnection.getInstance("").getPathFile()));
+                    eStudyXML.addQuestion("Pregunta " + numQuestionInEstudy, selectToAddInXML.printAllQuestions(), selectToAddInXML.toString(), answer.toString(), Base64Encode.encodeFileToBase64Binary(DBConnection.getInstance("").getPathFile()));
                     numQuestionInEstudy++;
                 }
 
