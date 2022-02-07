@@ -463,6 +463,7 @@ public class MakeFromState extends State{
             if (numOfColumns == null) {
                 Integer numOfColumnsRef = 1;
                 List<String> array = new ArrayList<>();
+                array.add(columnInSelect.getColumnReference());
                 columnsForEachTable.put(columnInSelect.getTableReference(), array);
                 necessaryColumnsForEachTable.put(columnInSelect.getTableReference(), numOfColumnsRef);
             } else {
