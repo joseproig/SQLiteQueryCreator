@@ -106,12 +106,13 @@ public class Select implements Cloneable{
     }
 
     public String printAllQuestions () {
-        int i = 1;
         StringBuilder questionsString = new StringBuilder("");
+        questionsString.append("<br><br><em><strong>").append("These are the options of the question:").append("</br></br></em></strong>").append("\n");
+        questionsString.append("<ul>").append("\n");
         for (String question:questions) {
-            questionsString.append(i).append(".").append(question).append("\n");
-            i++;
+            questionsString.append("<li>").append(question).append("</li>").append("\n");
         }
+        questionsString.append("</ul>").append("\n");
         return questionsString.toString();
     }
 }

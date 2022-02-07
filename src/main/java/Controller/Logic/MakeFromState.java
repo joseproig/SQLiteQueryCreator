@@ -264,12 +264,24 @@ public class MakeFromState extends State{
                                     Expression expression = new Expression(columnWhere, operand, secondOperand);
 
                                     if(firstFilterInSelect) {
-                                        Where where = new Where();
-                                        where.addExpression(expression);
-                                        Select select = new Select(columnsInSelectResult, from);
-                                        select.setWhere(where);
-                                        if (DBConnection.getInstance("").testIfQueryHasResults(select.toString())) {
-                                            resultsOfOneCausistic.add(select);
+                                        try {
+                                            Where where = new Where();
+                                            where.addExpression(expression);
+                                            Select select = new Select(columnsInSelectResult, from);
+                                            select.setWhere(where);
+                                            //Fem la comprovacio de la inversa per descartar queryes que no te sentit fer el WHERE
+                                            Select inverseSelectToAdd = new Select(columnsInSelectResult, from);
+                                            inverseSelectToAdd.setWhere((Where)where.clone());
+                                            inverseSelectToAdd.getWhere().setNegateExpression(true);
+                                            if (DBConnection.getInstance("").testIfQueryHasResults(select.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
+                                                resultsOfOneCausistic.add(select);
+                                                //Si es un WHERE d'una única AND, cosa poc probable però que pot passar, generem ja a l'enunciat, ja que no entrarà al else.
+                                                if (ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToFilterInSelect().size() == 1) {
+                                                    generateTextForAResult (select, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
+                                                }
+                                            }
+                                        } catch (CloneNotSupportedException e) {
+                                            e.printStackTrace();
                                         }
                                     } else {
                                         for (Select resultat : resultsOfOneCausistic) {
@@ -283,12 +295,7 @@ public class MakeFromState extends State{
                                                 inverseSelectToAdd.getWhere().setNegateExpression(true);
                                                 if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
-                                                    selectToAdd.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,selectToAdd));
-                                                    List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(selectToAdd);
-                                                    if (responseFromEQSPlain != null) {
-                                                        selectToAdd.getQuestions().addAll(responseFromEQSPlain);
-                                                    }
-                                                    //callLogosToGenerateTextsForSolution (selectToAdd);
+                                                    generateTextForAResult (selectToAdd, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -392,6 +399,14 @@ public class MakeFromState extends State{
             }
         }
         return possibleOrganizationsForOneQuestion;
+    }
+
+    private void generateTextForAResult (Select select, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int idQuestion) {
+        select.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,select));
+        List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
+        if (responseFromEQSPlain != null) {
+            select.getQuestions().addAll(responseFromEQSPlain);
+        }
     }
 
     private boolean checkIfColumnExistInPossibleResult (HashMap<String,Columna> hashMapRelationBetweenReferenceAndColumn, String columnRealName) {
