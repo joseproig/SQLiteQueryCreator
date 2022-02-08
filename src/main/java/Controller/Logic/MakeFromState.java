@@ -2,11 +2,11 @@ package Controller.Logic;
 
 import Controller.Communication.EQSplainClient;
 import Controller.DBLogic.DBConnection;
+import Controller.DBLogic.MySQLConnector;
 import Model.*;
 import Model.EQSPlain.ResponseEqsPlain;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
-import Model.ParametersOfQuestion.FilterOptions.FilterOption;
 import Model.ParametersOfQuestion.FilterOptions.LiteralValue;
 import Model.ParametersOfQuestion.Question;
 import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
@@ -18,6 +18,8 @@ import retrofit2.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -817,7 +819,7 @@ public class MakeFromState extends State{
         question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToTakeIntoAccountInSelect(), "\\{?c\\_?t}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
         question = changeTextOfFilterCheck (questionStructure.getStructure().getColumnsToFilterInSelect(), question, possibleOrganizationForOneQuestion,indexes,  indexesString, select);
         question = changeTextOfOrderBy ( questionStructure.getStructure().getColumnsToOrderBy(), question,  possibleOrganizationForOneQuestion, indexes, indexesString);
-
+        callLogosToGenerateTextsForSolution (select);
 
         return question;
     }
@@ -840,7 +842,8 @@ public class MakeFromState extends State{
     }
 
     private void callLogosToGenerateTextsForSolution (Select select) {
-        Process proc = null;
+
+        /*Process proc = null;
         String ipDirectionAndPort = "localhost:5432";
         String database = "dbname"; // Database name
         String username = "username";
@@ -854,7 +857,7 @@ public class MakeFromState extends State{
             InputStream err = proc.getErrorStream();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 }

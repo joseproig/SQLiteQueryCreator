@@ -1,6 +1,7 @@
 package Controller.Logic;
 
 import Controller.DBLogic.DBConnection;
+import Controller.DBLogic.MySQLConnector;
 import Model.*;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
@@ -17,6 +18,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,18 +29,31 @@ import java.util.regex.Pattern;
 
 public class InitializeState extends State {
     public static final String JSON_PATH = "src/fileUtils/config.json";
+    public static final String JSON_PATH_2 = "src/fileUtils/mysql_config.json";
     private HashMap <String, Taula> getTaules (HashMap<Integer,Taula> taulesById, int numOfQuestion) {
         try {
             Gson gson = new Gson();
             BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
             ProgramConfig programConfig = gson.fromJson(br, ProgramConfig.class);
-
+            BufferedReader br2 = new BufferedReader(new FileReader(JSON_PATH_2));
+            MysqlConfig mysqlConfig = gson.fromJson(br2, MysqlConfig.class);
             ProgramConfig.setInstance(programConfig);
+            MysqlConfig.setInstance(mysqlConfig);
             //Guardem els parametres que ha de tenir la pregunta
             takeParametersOfQuestion();
 
-
             HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
+
+            //Conexió a la BBDD de mysql, es necessari per tal de poder-se conectar-se a Logos més tard.
+            Path p = Paths.get(DBConnection.getInstance(null).getPathFile());
+            String fileName = p.getFileName().toString();
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            try {
+                MySQLConnector.getInstance().deleteDatabasecreateNewDatabase(fileName);
+                MySQLConnector.getInstance().close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             return taules;
         } catch (FileNotFoundException e) {
