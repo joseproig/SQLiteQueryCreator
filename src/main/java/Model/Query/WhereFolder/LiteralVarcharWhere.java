@@ -6,7 +6,7 @@ public class LiteralVarcharWhere extends WhereOperand {
     String varchar;
 
     public LiteralVarcharWhere(String varchar) {
-        super("LiteralIntegerWhere");
+        super("LiteralVarcharWhere");
         this.varchar = varchar.replace("'","''");
     }
 

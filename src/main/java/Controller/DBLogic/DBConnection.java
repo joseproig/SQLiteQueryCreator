@@ -3,6 +3,8 @@ package Controller.DBLogic;
 import Model.Columna;
 import Model.Taula;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,13 +14,16 @@ public class DBConnection {
     private static DBConnection instance;
     private Connection connection;
     private String pathFile;
+    private String databaseName;
 
     private DBConnection(String pathFile) {
         this.pathFile = pathFile;
+        Path p = Paths.get(pathFile);
+        String fileName = p.getFileName().toString();
+        databaseName = fileName.substring(0, fileName.lastIndexOf('.'));
         connection = null;
         try
         {
-            System.out.println(pathFile);
             // Obrim la base de dades introduida per l'usuari
             connection = DriverManager.getConnection("jdbc:sqlite:" + pathFile);
         }
@@ -28,6 +33,14 @@ public class DBConnection {
             System.err.println(e.getMessage());
         }
 
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public static DBConnection getInstance(String pathFile) {
@@ -185,5 +198,7 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
+
+
 
 }

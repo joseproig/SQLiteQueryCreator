@@ -3,6 +3,7 @@ package Controller.Logic;
 import Controller.DBLogic.DBConnection;
 import Controller.DBLogic.MySQLConnector;
 import Model.*;
+import Model.DatabaseData.DatabaseData;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
 import Model.ParametersOfQuestion.FilterOptions.FilterOption;
@@ -14,10 +15,7 @@ import Model.ParametersOfQuestion.Structure;
 import Utils.Algorithms.FloydWarshall;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -43,14 +41,20 @@ public class InitializeState extends State {
             takeParametersOfQuestion();
 
             HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
-
+            DatabaseData.getInstance().setTaules(taules);
             //Conexió a la BBDD de mysql, es necessari per tal de poder-se conectar-se a Logos més tard.
-            Path p = Paths.get(DBConnection.getInstance(null).getPathFile());
-            String fileName = p.getFileName().toString();
-            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+
             try {
-                MySQLConnector.getInstance().deleteDatabasecreateNewDatabase(fileName);
-                MySQLConnector.getInstance().close();
+                MySQLConnector.getInstance().deleteDatabasecreateNewDatabase(DBConnection.getInstance(null).getDatabaseName());
+                MySQLConnector.getInstance().createNecessaryTablesForLogos(DBConnection.getInstance(null).getDatabaseName());
+                //MySQLConnector.getInstance().updateLogosTables (DBConnection.getInstance(null).getDatabaseName(), taules);
+
+                ProcessBuilder builder = new ProcessBuilder("bash", "-c","./sqlite3mysql -f " + ProgramConfig.getInstance().getDbPath() + " -d " + DBConnection.getInstance(null).getDatabaseName() + " -u " + mysqlConfig.getMysql_user() + " --mysql-password " + mysqlConfig.getMysql_passwd());
+                builder.directory(new File(ProgramConfig.getInstance().getMysqlConverterPath()));
+                builder.redirectErrorStream(true);
+                Process p2 = builder.start();
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

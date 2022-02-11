@@ -6,6 +6,7 @@ public class ProgramConfig {
     private static ProgramConfig instance;
     private String dbPath;
     private ParametersConfig filterParams;
+    private String mysqlConverterPath;
 
     public static ProgramConfig getInstance() {
         if (instance == null) {
@@ -32,5 +33,13 @@ public class ProgramConfig {
 
     public void setFilterParams(ParametersConfig filterParams) {
         this.filterParams = filterParams;
+    }
+
+    public String getMysqlConverterPath() {
+        return mysqlConverterPath;
+    }
+
+    public void setMysqlConverterPath(String mysqlConverterPath) {
+        this.mysqlConverterPath = mysqlConverterPath;
     }
 }

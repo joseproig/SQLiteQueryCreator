@@ -55,7 +55,7 @@ public class TableFrom {
                 if (firstTable && i == 0) {
                     stringBuilder.append(tableRealName).append(" AS ").append(tableName);
                 }
-                stringBuilder.append(" INNER JOIN ").append(relation.getTableFrom().getTableRealName()).append(" AS ").append(relation.getTableFrom().getTableName()).append(" ON ");
+                stringBuilder.append(" JOIN ").append(relation.getTableFrom().getTableRealName()).append(" AS ").append(relation.getTableFrom().getTableName()).append(" ON ");
                 int j = 0;
                 for (FK fk: relation.getFks()) {
                     stringBuilder.append(tableName).append(".").append(fk.getNomOrigen()).append("=").append(relation.getTableFrom().getTableName()).append(".").append(fk.getNomDesti());

@@ -4,6 +4,7 @@ import Controller.Communication.EQSplainClient;
 import Controller.DBLogic.DBConnection;
 import Controller.DBLogic.MySQLConnector;
 import Model.*;
+import Model.DatabaseData.DatabaseData;
 import Model.EQSPlain.ResponseEqsPlain;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
@@ -13,14 +14,17 @@ import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
 import Model.ParametersOfQuestion.SelectFolder.ColumnsInSelect;
 import Model.Query.*;
 import Model.Query.WhereFolder.*;
+import gr.uoa.di.db2nl.q2nl.CommandInterface;
+import okhttp3.Route;
+import org.sqlite.core.DB;
 import retrofit2.Response;
 
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MakeFromState extends State{
@@ -33,6 +37,11 @@ public class MakeFromState extends State{
     @Override
     void doYourFunction(String string) throws IOException {
         List <Select> results = new ArrayList<>();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("----------------------------Pregunta " + (Integer.parseInt(string) + 1) + "--------------------------------------");
         for (Long key:TablesData.getInstance().getCaminsPossiblesSolucions().keySet()) {
             TableLayer tableLayer = TablesData.getInstance().getCaminsPossiblesSolucions().get(key).getConnections();
@@ -69,6 +78,7 @@ public class MakeFromState extends State{
 
         int numOfQuestion = Integer.parseInt(string) + 1;
         if (numOfQuestion == ProgramConfig.getInstance().getFilterParams().getQuestions().size()) {
+            MySQLConnector.getInstance().close();
             context.changeState(new GenerateXML());
         } else {
             context.changeState(new FilterTables());
@@ -190,7 +200,7 @@ public class MakeFromState extends State{
                             int t2 = -2;
                             int h = 0;
                             for (String tableName : indexesString) {
-                                if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference())) {
+                                if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference()) && t1 == -2) {
                                     t1 = h;
                                     if (t2 != -2) {
                                         //Per no continuar iterant
@@ -198,7 +208,7 @@ public class MakeFromState extends State{
                                     }
                                 }
                                 if (filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption")) {
-                                    if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference())) {
+                                    if (tableName.equals(((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference()) && t2 == -2) {
                                         t2 = h;
                                         if (t1 != -2) {
                                             //Per no continuar iterant
@@ -206,7 +216,7 @@ public class MakeFromState extends State{
                                         }
                                     }
                                 } else {
-                                    if (filterInSelect.getFilterOption2().getType().equals("LiteralValue")) {
+                                    if (filterInSelect.getFilterOption2().getType().equals("LiteralValue") && t2 == -2) {
                                         t2 = -1;
                                     }
                                 }
@@ -232,7 +242,7 @@ public class MakeFromState extends State{
                                         if (typeColumnOne.equalsIgnoreCase("date")) {
                                             secondOperands.add(new LiteralDateWhere(DBConnection.getInstance(null).generateRandomOfDateColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName())));
                                         } else {
-                                            if (typeColumnOne.toLowerCase().contains("varchar")) {
+                                            if (typeColumnOne.toLowerCase().contains("varchar") || typeColumnOne.toLowerCase().contains("text")) {
                                                 secondOperands.add(new LiteralVarcharWhere(DBConnection.getInstance(null).generateRandomOfVarcharColumn(hashMapT1.get(columnFilterOption.getColumnRference()).getColumnName(),hashMapT1.get(columnFilterOption.getColumnRference()).getTableName())));
                                             }
                                         }
@@ -278,9 +288,9 @@ public class MakeFromState extends State{
                                             if (DBConnection.getInstance("").testIfQueryHasResults(select.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                 resultsOfOneCausistic.add(select);
                                                 //Si es un WHERE d'una única AND, cosa poc probable però que pot passar, generem ja a l'enunciat, ja que no entrarà al else.
-                                                if (ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToFilterInSelect().size() == 1) {
+                                                /*if (ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).getStructure().getColumnsToFilterInSelect().size() == 1) {
                                                     generateTextForAResult (select, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
-                                                }
+                                                }*/
                                             }
                                         } catch (CloneNotSupportedException e) {
                                             e.printStackTrace();
@@ -297,7 +307,8 @@ public class MakeFromState extends State{
                                                 inverseSelectToAdd.getWhere().setNegateExpression(true);
                                                 if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
-                                                    generateTextForAResult (selectToAdd, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
+                                                } else {
+                                                    System.out.println("BAD: " + selectToAdd);
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -325,6 +336,9 @@ public class MakeFromState extends State{
                         }*/
                     }
                     includeOrderByInResults (resultsOfOneCausistic, idQuestion, indexes,  indexesString,  possibleOrganizationForOneQuestion);
+                    for (Select s : resultsOfOneCausistic) {
+                        generateTextForAResult (s, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
+                    }
                     results.addAll(resultsOfOneCausistic);
                 }
             }
@@ -347,7 +361,7 @@ public class MakeFromState extends State{
                 operators.add("<");
                 operators.add("=");
             } else {
-                if (type.toLowerCase().contains("varchar")) {
+                if (type.toLowerCase().contains("varchar") || type.toLowerCase().contains("text") ) {
                     operators.add("=");
                     operators.add("LIKE");
                 }
@@ -408,6 +422,10 @@ public class MakeFromState extends State{
         List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
         if (responseFromEQSPlain != null) {
             select.getQuestions().addAll(responseFromEQSPlain);
+        }
+        String question = callLogosToGenerateTextsForSolution(select);
+        if (question != null) {
+            select.addQuestion(question);
         }
     }
 
@@ -715,15 +733,15 @@ public class MakeFromState extends State{
                 if (filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption") && ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference().equals(s)) {
                     t1 = i;
                 } else {
-                    if (!filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption")) {
+                    if (!filterInSelect.getFilterOption1().getType().equals("ColumnFilterOption") && filterInSelect.getFilterOption2().getType().equals("LiteralValue")) {
                         t1 = -2;
                     }
                 }
                 if (filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption") && ((ColumnFilterOption) filterInSelect.getFilterOption2()).getTableReference().equals(s)) {
                     t2 = i;
                 } else {
-                    if (!filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption")) {
-                        t1 = -2;
+                    if (!filterInSelect.getFilterOption2().getType().equals("ColumnFilterOption") && filterInSelect.getFilterOption2().getType().equals("LiteralValue")) {
+                        t2 = -2;
                     }
                 }
                 if (t1 != -1 && t2 != -1) {
@@ -734,26 +752,63 @@ public class MakeFromState extends State{
             String textComparacio =  "";
             if (t1 != -2 && t2 == -2) {
                 List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference());
+                String value = "";
                 //Busquem el simbol de la operació i adjuntem text de comparacio
                 for (Expression expression : select.getWhere().getExpression()) {
-                    if (((ColumnWhere)expression.getExpression()).getNomColumnaEnunciat().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaulaEnunciat().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) {
+                    if (((ColumnWhere)expression.getExpression()).getColumna().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName()) && ((ColumnWhere)expression.getExpression()).getNomTaula().equals(optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableNameInFrom())) {
+                        value = expression.getExpression_2().toString();
                         if (expression.getOperator().equalsIgnoreCase("equals") || expression.getOperator().equals("=")) {
                             textComparacio = " is equal to the ";
-                        }
-                        else {
+                        } else {
                             if (expression.getOperator().equalsIgnoreCase(">")) {
                                 textComparacio = " is greater than ";
                             } else {
                                 if (expression.getOperator().equals("<")) {
                                     textComparacio = " is less than ";
+                                } else{
+                                    if (expression.getOperator().equals("LIKE")) {
+                                        //\\d+(?:\\.\\d+)?%
+                                        String regularExpression3 = "^([a-zA-Z]+%)$";
+                                        Pattern pat3 = Pattern.compile(regularExpression3);
+                                        Matcher matches3 = pat3.matcher(value);
+                                        if (matches3.find()) {
+                                            textComparacio = " starts with ";
+                                            value = value.substring(0, value.indexOf('%'));
+                                            break;
+                                        }
+                                        String regularExpression4 = "^(%[a-zA-Z]+%)$";
+                                        Pattern pat4 = Pattern.compile(regularExpression4);
+                                        Matcher matches4 = pat4.matcher(value);
+                                        if (matches4.find()) {
+                                            textComparacio = " contains ";
+                                            value = value.substring(value.indexOf("%") + 1);
+                                            value = value.substring(0, value.indexOf("%"));
+                                            break;
+                                        }
+
+                                        String regularExpression5 = "^(%[a-zA-Z]+)$";
+                                        Pattern pat5 = Pattern.compile(regularExpression5);
+                                        Matcher matches5 = pat5.matcher(value);
+                                        if (matches5.find()) {
+                                            textComparacio = " ends with ";
+                                            value = value.substring(value.indexOf('%')+1);
+                                            break;
+                                        }
+
+                                        if (value.contains("_")) {
+
+                                        }
+
+                                    }
                                 }
                             }
                         }
+
                         break;
                     }
                 }
 
-                question = question.replaceFirst("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)literal\\}", optionsOfOneTable.get(t1).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + "100");
+                question = question.replaceFirst("(?i)\\{(" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference() + "_" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + ")(>=|<=|>|<|==|!=)literal\\}", optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getColumnName().replace("_"," ") + textComparacio + value);
                 question = question.replaceAll("(?i)"+ "\\{" + ((ColumnFilterOption) filterInSelect.getFilterOption1()).getTableReference() + "\\}", optionsOfOneTable.get(indexes.get(t1)).get(((ColumnFilterOption) filterInSelect.getFilterOption1()).getColumnRference()).getTableName());
             } else {
                 if (t1 != -2 && t2 != -2) {
@@ -791,6 +846,8 @@ public class MakeFromState extends State{
         return question;
     }
 
+
+
     private String changeTextOfOrderBy (List<ColumnInSelect> columnsInSelects, String question, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString){
         for (ColumnInSelect columnInSelect: columnsInSelects){
             List<HashMap<String, Columna>> optionsOfOneTable = possibleOrganizationForOneQuestion.get(columnInSelect.getTableReference());
@@ -819,15 +876,14 @@ public class MakeFromState extends State{
         question = changeTextOfColumnsInSelectObjects (question, questionStructure.getStructure().getColumnsToTakeIntoAccountInSelect(), "\\{?c\\_?t}",questionStructure, possibleOrganizationForOneQuestion,  indexes,  indexesString);
         question = changeTextOfFilterCheck (questionStructure.getStructure().getColumnsToFilterInSelect(), question, possibleOrganizationForOneQuestion,indexes,  indexesString, select);
         question = changeTextOfOrderBy ( questionStructure.getStructure().getColumnsToOrderBy(), question,  possibleOrganizationForOneQuestion, indexes, indexesString);
-        callLogosToGenerateTextsForSolution (select);
 
         return question;
     }
 
     private List<String> callEQSPlainToGenerateMoreTextsForSolution (Select select) {
-        try {
+        /*try {
             List<String> responses = new ArrayList<>();
-            Response<ResponseEqsPlain> responseEqsPlain = EQSplainClient.getInstance().getListOfQuestionsForOneQuery(select.toString(),"database",5).execute();
+            Response<ResponseEqsPlain> responseEqsPlain = EQSplainClient.getInstance().getListOfQuestionsForOneQuery(select.toString(),"database",2).execute();
             if (responseEqsPlain.isSuccessful()) {
                 ResponseEqsPlain textsEQSPlain = responseEqsPlain.body();
                 responses.addAll(textsEQSPlain.getExplanations());
@@ -837,27 +893,35 @@ public class MakeFromState extends State{
             return responses;
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         return null;
     }
 
-    private void callLogosToGenerateTextsForSolution (Select select) {
+    private String callLogosToGenerateTextsForSolution (Select select) {
+        boolean dontHaveOnlyLiteralComparations = true;
+        for (Expression expression : select.getWhere().getExpression()) {
+            if (!(expression.getExpression() instanceof LiteralVarcharWhere || expression.getExpression_2() instanceof LiteralVarcharWhere || expression.getExpression() instanceof LiteralDateWhere || expression.getExpression_2() instanceof LiteralDateWhere || expression.getExpression() instanceof LiteralIntegerWhere || expression.getExpression_2() instanceof LiteralIntegerWhere )) {
+                dontHaveOnlyLiteralComparations = false;
+                break;
+            }
+        }
+        if (dontHaveOnlyLiteralComparations) {
+            String ipDirectionAndPort = "localhost:3306";
+            String database = DBConnection.getInstance(null).getDatabaseName(); // Database name
+            String username = MysqlConfig.getInstance().getMysql_user();
+            String password = MysqlConfig.getInstance().getMysql_passwd();
+            String dbType = "MySQL"; // or MySQL
+            String[] dbSchemas = {"AC3"};
 
-        /*Process proc = null;
-        String ipDirectionAndPort = "localhost:5432";
-        String database = "dbname"; // Database name
-        String username = "username";
-        String password = "bds76atrwufhsn";
-        String dbType = "PSQL"; // or MySQL
-        String[] dbSchemas = { "public"};
-        try {
-            proc = Runtime.getRuntime().exec("java -jar src/fileUtils/logos.jar " + select.toString() + " " + ipDirectionAndPort + " " + database + " " + username + " " + password + " " + dbType + " " + dbSchemas[0]);
-
-            InputStream in = proc.getInputStream();
-            InputStream err = proc.getErrorStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
+            String question = null;
+            try {
+                question = CommandInterface.translate(select.toString(), ipDirectionAndPort, database, username, password, dbType, dbSchemas);
+                //ERROR:Despres de fer el translate es borra tota la info i apareix error. Pero en un primer moment l'error es Table 'consumes' does not exist.
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return question;
+        }
+        return null;
     }
 }
