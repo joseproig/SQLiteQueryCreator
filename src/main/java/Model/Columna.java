@@ -73,6 +73,6 @@ public class Columna {
     }
 
     public void setPK(int isPK) {
-        this.isPK = isPK == 1;
+        this.isPK = isPK != 0;
     }
 }

@@ -4,7 +4,7 @@ import Controller.Communication.EQSplainClient;
 import Controller.DBLogic.DBConnection;
 import Controller.DBLogic.MySQLConnector;
 import Model.*;
-import Model.DatabaseData.DatabaseData;
+
 import Model.EQSPlain.ResponseEqsPlain;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
@@ -307,8 +307,6 @@ public class MakeFromState extends State{
                                                 inverseSelectToAdd.getWhere().setNegateExpression(true);
                                                 if (DBConnection.getInstance("").testIfQueryHasResults(selectToAdd.toString()) && DBConnection.getInstance("").testIfQueryHasResults(inverseSelectToAdd.toString())) {
                                                     newResultsToAdd.add(selectToAdd);
-                                                } else {
-                                                    System.out.println("BAD: " + selectToAdd);
                                                 }
                                             } catch (CloneNotSupportedException e) {
                                                 e.printStackTrace();
@@ -337,7 +335,7 @@ public class MakeFromState extends State{
                     }
                     includeOrderByInResults (resultsOfOneCausistic, idQuestion, indexes,  indexesString,  possibleOrganizationForOneQuestion);
                     for (Select s : resultsOfOneCausistic) {
-                        generateTextForAResult (s, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion);
+                        generateTextForAResult (s, possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion, results);
                     }
                     results.addAll(resultsOfOneCausistic);
                 }
@@ -417,15 +415,18 @@ public class MakeFromState extends State{
         return possibleOrganizationsForOneQuestion;
     }
 
-    private void generateTextForAResult (Select select, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int idQuestion) {
-        select.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,select));
-        List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
-        if (responseFromEQSPlain != null) {
-            select.getQuestions().addAll(responseFromEQSPlain);
+    private void generateTextForAResult (Select select, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int idQuestion, List<Select> results) {
+        select.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,select), Select.TEMPLATE);
+        int LIMIT_OF_QUESTIONS_EQSPLAIN = 10;
+        if (results.size() < LIMIT_OF_QUESTIONS_EQSPLAIN) {
+            List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
+            if (responseFromEQSPlain != null) {
+                select.addQuestions(responseFromEQSPlain, Select.EQSPLAIN);
+            }
         }
         String question = callLogosToGenerateTextsForSolution(select);
         if (question != null) {
-            select.addQuestion(question);
+            select.addQuestion(question,Select.LOGOS);
         }
     }
 
@@ -768,35 +769,36 @@ public class MakeFromState extends State{
                                 } else{
                                     if (expression.getOperator().equals("LIKE")) {
                                         //\\d+(?:\\.\\d+)?%
-                                        String regularExpression3 = "^([a-zA-Z]+%)$";
+                                        String regularExpression3 = "^'([a-zA-Z]+%)'$";
                                         Pattern pat3 = Pattern.compile(regularExpression3);
                                         Matcher matches3 = pat3.matcher(value);
                                         if (matches3.find()) {
                                             textComparacio = " starts with ";
-                                            value = value.substring(0, value.indexOf('%'));
+                                            value = value.substring(0, value.indexOf('%')).replace("'","");
                                             break;
                                         }
-                                        String regularExpression4 = "^(%[a-zA-Z]+%)$";
+                                        String regularExpression4 = "(^'%[a-zA-Z]+%)'$";
                                         Pattern pat4 = Pattern.compile(regularExpression4);
                                         Matcher matches4 = pat4.matcher(value);
                                         if (matches4.find()) {
                                             textComparacio = " contains ";
                                             value = value.substring(value.indexOf("%") + 1);
-                                            value = value.substring(0, value.indexOf("%"));
+                                            value = value.substring(0, value.indexOf("%")).replace("'","");
                                             break;
                                         }
 
-                                        String regularExpression5 = "^(%[a-zA-Z]+)$";
+                                        String regularExpression5 = "^'(%[a-zA-Z]+)'$";
                                         Pattern pat5 = Pattern.compile(regularExpression5);
                                         Matcher matches5 = pat5.matcher(value);
                                         if (matches5.find()) {
                                             textComparacio = " ends with ";
-                                            value = value.substring(value.indexOf('%')+1);
+                                            value = value.substring(value.indexOf('%')+1).replace("'","");
                                             break;
                                         }
 
                                         if (value.contains("_")) {
-
+                                            textComparacio = " follows this expression " + value.replace('_','?').replace("'","") + " where  ? is any character";
+                                            value = "";
                                         }
 
                                     }
@@ -881,19 +883,19 @@ public class MakeFromState extends State{
     }
 
     private List<String> callEQSPlainToGenerateMoreTextsForSolution (Select select) {
-        /*try {
+        try {
             List<String> responses = new ArrayList<>();
             Response<ResponseEqsPlain> responseEqsPlain = EQSplainClient.getInstance().getListOfQuestionsForOneQuery(select.toString(),"database",2).execute();
             if (responseEqsPlain.isSuccessful()) {
                 ResponseEqsPlain textsEQSPlain = responseEqsPlain.body();
                 responses.addAll(textsEQSPlain.getExplanations());
-            } else{
+            } else {
                 System.out.println("EQSPlain no ha pogut resoldre una de les querys generades");
             }
             return responses;
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
         return null;
     }
 
@@ -916,7 +918,6 @@ public class MakeFromState extends State{
             String question = null;
             try {
                 question = CommandInterface.translate(select.toString(), ipDirectionAndPort, database, username, password, dbType, dbSchemas);
-                //ERROR:Despres de fer el translate es borra tota la info i apareix error. Pero en un primer moment l'error es Table 'consumes' does not exist.
             } catch (Exception e) {
                 e.printStackTrace();
             }

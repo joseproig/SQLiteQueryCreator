@@ -17,6 +17,8 @@ public final class TablesData {
     private HashMap <Integer, Taula> taulesById;
     private HashMap<Long, ResultOfFiltering> caminsPossiblesSolucions;
     private List<List<Select>> possibleQueries = new ArrayList<>();
+    private int numOfQueries = 0;
+    private static final int LIMIT_OF_QUERIES = 300;
 
     private TablesData() {}
 
@@ -97,6 +99,16 @@ public final class TablesData {
     }
 
     public void addNewListOfPossibleQueries (List<Select> possibleQueriesToAdd) {
-        possibleQueries.add(possibleQueriesToAdd);
+        numOfQueries += possibleQueriesToAdd.size();
+        if (numOfQueries < LIMIT_OF_QUERIES) {
+            possibleQueries.add(possibleQueriesToAdd);
+        } else {
+            List<Select> takeSpecificNumberOfQueries = new ArrayList<>();
+            for (int i = 0; i < LIMIT_OF_QUERIES; i++) {
+                takeSpecificNumberOfQueries.add(possibleQueriesToAdd.get(i));
+            }
+            possibleQueries.add(takeSpecificNumberOfQueries);
+        }
+
     }
 }

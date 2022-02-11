@@ -52,5 +52,7 @@ public class GenerateXML extends State {
             numQuestion++;
         }
         eStudyXML.exportToFile();
+        context.changeState(new GenerateCSV());
+        context.doStateFunction(string);
     }
 }

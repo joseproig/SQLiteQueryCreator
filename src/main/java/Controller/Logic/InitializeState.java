@@ -3,7 +3,6 @@ package Controller.Logic;
 import Controller.DBLogic.DBConnection;
 import Controller.DBLogic.MySQLConnector;
 import Model.*;
-import Model.DatabaseData.DatabaseData;
 import Model.ParametersOfQuestion.FilterInSelect;
 import Model.ParametersOfQuestion.FilterOptions.ColumnFilterOption;
 import Model.ParametersOfQuestion.FilterOptions.FilterOption;
@@ -41,7 +40,6 @@ public class InitializeState extends State {
             takeParametersOfQuestion();
 
             HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
-            DatabaseData.getInstance().setTaules(taules);
             //Conexió a la BBDD de mysql, es necessari per tal de poder-se conectar-se a Logos més tard.
 
             try {
