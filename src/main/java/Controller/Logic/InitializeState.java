@@ -95,7 +95,10 @@ public class InitializeState extends State {
                 }
             }
             Question actualQuestion = ProgramConfig.getInstance().getFilterParams().getQuestions().get(i);
-            actualQuestion.setMinNumTables(actualQuestion.getStructure().getTablesThatAppearInSelect().size());
+            actualQuestion.setMinNumTables(actualQuestion.getStructure().getDifferentTables());
+            if (actualQuestion.getMaxNumTables() == 0) {
+                actualQuestion.setMaxNumTables(actualQuestion.getStructure().getDifferentTables());
+            }
             i++;
         }
     }
@@ -105,6 +108,7 @@ public class InitializeState extends State {
         if (matches4.find()) {
             String nameOfTable = matches4.group(0);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addTableToAppearInSelect(nameOfTable);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(nameOfTable);
             return true;
         }
         return false;
@@ -118,6 +122,7 @@ public class InitializeState extends State {
             String table = splits[1];
             ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToSeeInSelect(columnInSelect);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(table);
             return true;
         }
         return false;
@@ -131,6 +136,7 @@ public class InitializeState extends State {
             String table = splits[1];
             ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToTakeIntoAccount(columnInSelect);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(table);
             return true;
         }
         return false;
@@ -144,6 +150,7 @@ public class InitializeState extends State {
             String table = splits[1];
             ColumnInSelect columnInSelect = new ColumnInSelect(column,table);
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToOrderBy(columnInSelect);
+            ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(table);
             return true;
         }
         return false;
@@ -159,6 +166,7 @@ public class InitializeState extends State {
             } else {
                 String [] splits = matches2.group(1).split("_");
                 filterOption1 = new ColumnFilterOption("ColumnFilterOption",splits[1],splits[0]);
+                ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(splits[1]);
             }
 
             if (matches2.group(3).equals("literal")) {
@@ -166,6 +174,7 @@ public class InitializeState extends State {
             } else {
                 String [] splits = matches2.group(3).split("_");
                 filterOption2 = new ColumnFilterOption("ColumnFilterOption",splits[1],splits[0]);
+                ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addDifferentTables(splits[1]);
             }
             ProgramConfig.getInstance().getFilterParams().getQuestions().get(numberOfQuestion).getStructure().addColumnToFilterInSelect(new FilterInSelect(filterOption1,matches2.group(2),filterOption2));
             return true;

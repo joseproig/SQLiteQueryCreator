@@ -4,7 +4,9 @@ package Model.ParametersOfQuestion;
 import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
 import Model.ParametersOfQuestion.SelectFolder.ColumnsInSelect;
 
+import javax.naming.ldap.HasControls;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Structure {
@@ -13,6 +15,7 @@ public class Structure {
     private List<String> tablesThatAppearInSelect;
     private List<ColumnInSelect> columnsToOrderBy;
     private ColumnsInSelect columnsToTakeIntoAccountInSelect;
+    private List<String> differentTables;
 
     public Structure() {
         columnsToSeeInSelect = new ColumnsInSelect();
@@ -20,6 +23,7 @@ public class Structure {
         columnsToOrderBy = new ArrayList<>();
         tablesThatAppearInSelect = new ArrayList<>();
         columnsToTakeIntoAccountInSelect = new ColumnsInSelect();
+        differentTables = new ArrayList<>();
     }
 
     public List<String> getTablesThatAppearInSelect() {
@@ -80,5 +84,22 @@ public class Structure {
 
     public void setColumnsToTakeIntoAccountInSelect(ColumnsInSelect columnsToTakeIntoAccountInSelect) {
         this.columnsToTakeIntoAccountInSelect = columnsToTakeIntoAccountInSelect;
+    }
+
+    public void addDifferentTables (String table) {
+        boolean isNewTable = true;
+        for (String s: differentTables) {
+            if (s.equals(table)){
+                isNewTable = false;
+                break;
+            }
+        }
+        if (isNewTable) {
+            differentTables.add(table);
+        }
+    }
+
+    public int getDifferentTables(){
+        return differentTables.size();
     }
 }

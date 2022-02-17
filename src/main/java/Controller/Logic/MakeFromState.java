@@ -417,16 +417,20 @@ public class MakeFromState extends State{
 
     private void generateTextForAResult (Select select, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int idQuestion, List<Select> results) {
         select.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,select), Select.TEMPLATE);
-        int LIMIT_OF_QUESTIONS_EQSPLAIN = 10;
-        if (results.size() < LIMIT_OF_QUESTIONS_EQSPLAIN) {
-            List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
-            if (responseFromEQSPlain != null) {
-                select.addQuestions(responseFromEQSPlain, Select.EQSPLAIN);
+        if(!ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).isDeactivateEQSPlain()) {
+            int LIMIT_OF_QUESTIONS_EQSPLAIN = 10;
+            if (results.size() < LIMIT_OF_QUESTIONS_EQSPLAIN) {
+                List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
+                if (responseFromEQSPlain != null) {
+                    select.addQuestions(responseFromEQSPlain, Select.EQSPLAIN);
+                }
             }
         }
-        String question = callLogosToGenerateTextsForSolution(select);
-        if (question != null) {
-            select.addQuestion(question,Select.LOGOS);
+        if (!ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).isDeactivateLogos()) {
+            String question = callLogosToGenerateTextsForSolution(select);
+            if (question != null) {
+                select.addQuestion(question, Select.LOGOS);
+            }
         }
     }
 
@@ -860,10 +864,10 @@ public class MakeFromState extends State{
                 }
                 i++;
             }
-            HashMap<String, Columna> actualCombination = optionsOfOneTable.get(i);
+
 
             question = question.replaceAll("(?i)\\{" + columnInSelect.getColumnReference() + "_" + columnInSelect.getTableReference() + "_o\\}", optionsOfOneTable.get(indexes.get(i)).get(columnInSelect.getColumnReference()).getColumnName().replace("_"," "));
-            question = question.replaceAll("(?i)"+ "\\{" + columnInSelect.getTableReference() + "\\}", optionsOfOneTable.get(i).get(columnInSelect.getColumnReference()).getTableName());
+            question = question.replaceAll("(?i)"+ "\\{" + columnInSelect.getTableReference() + "\\}", optionsOfOneTable.get(indexes.get(i)).get(columnInSelect.getColumnReference()).getTableName());
         }
         return question;
     }

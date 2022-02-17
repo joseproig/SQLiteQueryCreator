@@ -4,10 +4,7 @@ import Model.*;
 import Utils.ArrayUtils;
 import Utils.ByteTreatment;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -63,8 +60,29 @@ public class SubMatrixTreatment extends Thread{
 
 
             if (numPossibilities == 0) {
+                //TODO: Aqui añadir que si alguna columna de relacion
                 if (minNumTables <= nodesConsultats.get(llistaAPlenar).size() && maxNumTables >= nodesConsultats.get(llistaAPlenar).size()) {
                     resultat.put(ByteTreatment.convertListIntegerToLong(nodesConsultats.get(llistaAPlenar)), new ResultOfFiltering(tableLayers.get(llistaAPlenar),nodesConsultats.get(llistaAPlenar)));
+                } else {
+                    if (maxNumTables < nodesConsultats.get(llistaAPlenar).size()) {
+                        int numOfRelationTables = 0;
+                        for (Integer node : nodesConsultats.get(llistaAPlenar)) {
+                            Taula taula = TablesData.getInstance().getTaulesById().get(node);
+                            boolean normalAttributes = true;
+                            for (Map.Entry<String, Columna> columna:taula.getColumnes().entrySet()) {
+                                if (!columna.getValue().getPK()) {
+                                    normalAttributes = false;
+                                    break;
+                                }
+                            }
+                            if (normalAttributes && taula.getForeignKeys().size() > 1) {
+                                numOfRelationTables++;
+                            }
+                        }
+                        if((numOfRelationTables + maxNumTables) ==  nodesConsultats.get(llistaAPlenar).size()) {
+                            resultat.put(ByteTreatment.convertListIntegerToLong(nodesConsultats.get(llistaAPlenar)), new ResultOfFiltering(tableLayers.get(llistaAPlenar),nodesConsultats.get(llistaAPlenar)));
+                        }
+                    }
                 }
                 return ;
             }

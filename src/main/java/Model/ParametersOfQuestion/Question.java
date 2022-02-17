@@ -4,6 +4,8 @@ public class Question {
     private String question;
     private int minNumTables;
     private int maxNumTables;
+    private boolean deactivateLogos = true;
+    private boolean deactivateEQSPlain = true;
     private Structure structure;
 
 
@@ -41,5 +43,21 @@ public class Question {
 
     public void setStructure(Structure structure) {
         this.structure = structure;
+    }
+
+    public boolean isDeactivateLogos() {
+        return deactivateLogos;
+    }
+
+    public void setDeactivateLogos(boolean deactivateLogos) {
+        this.deactivateLogos = deactivateLogos;
+    }
+
+    public boolean isDeactivateEQSPlain() {
+        return deactivateEQSPlain;
+    }
+
+    public void setDeactivateEQSPlain(boolean deactivateEQSPlain) {
+        this.deactivateEQSPlain = deactivateEQSPlain;
     }
 }
