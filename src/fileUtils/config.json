@@ -4,8 +4,9 @@
   "filterParams": {
     "questions": [
       {
-        "question":"List the {C2_T1_S} and the {C1_T1_S} of the {T1} whose {c2_t1==literal} and {c1_t1==literal}, an order by {C2_T1_O} and {C1_T3_O}",
-        "maxNumTables": 5
+        "question":"List the {C2_T2_S}s of {T2} and the {C1_T1_S} of their {T1}s whose {c2_t1==literal} and {c1_t1==literal}, an order by {C2_T1_O}",
+        "deactivateLogos": true,
+        "deactivateEQSPlain": true
       }
     ]
   }

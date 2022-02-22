@@ -40,6 +40,20 @@ public class SubMatrixTreatment extends Thread{
         }
     }
 
+    public Integer searchNumberOfConnections(TableLayer tableLayer,int idToSearch) {
+        if (tableLayer.getTableNum() == idToSearch) {
+            return tableLayer.getPointsTo().size();
+        } else {
+            for (int i = 0; i < tableLayer.getPointsTo().size(); i++) {
+                Integer integer = searchNumberOfConnections(tableLayer.getPointsTo().get(i), idToSearch);
+                if(integer != null) {
+                    return integer;
+                }
+            }
+        }
+        return null;
+    }
+
     public void backtracking (List<Integer> nodesActual, Integer llistaAPlenar, List<List<Integer>> nodesConsultats,List<TableLayer> tableLayers ,  HashMap<Long, ResultOfFiltering> resultat) {
         //if (ProgramConfig.getInstance().getFilterParams().getMinNumTables() > nodesConsultats.get(llistaAPlenar).size()) {
             int numPossibilities = 0;
@@ -76,7 +90,11 @@ public class SubMatrixTreatment extends Thread{
                                 }
                             }
                             if (normalAttributes && taula.getForeignKeys().size() > 1) {
-                                numOfRelationTables++;
+                                //Comprovem que la NM hagi d'apuntar a diferents relacions per obtindre resultat, que no tingui que estar la NM sense relacionar a nigu
+                                int numOfConnections =  searchNumberOfConnections(tableLayers.get(llistaAPlenar),taula.getId());
+                                if (numOfConnections > 1) {
+                                    numOfRelationTables++;
+                                }
                             }
                         }
                         if((numOfRelationTables + maxNumTables) ==  nodesConsultats.get(llistaAPlenar).size()) {
