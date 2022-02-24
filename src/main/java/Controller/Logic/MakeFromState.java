@@ -79,7 +79,7 @@ public class MakeFromState extends State{
         int numOfQuestion = Integer.parseInt(string) + 1;
         if (numOfQuestion == ProgramConfig.getInstance().getFilterParams().getQuestions().size()) {
             MySQLConnector.getInstance().close();
-            context.changeState(new GenerateXML());
+            context.changeState(new GenerateSolutionRESTAPI());
         } else {
             context.changeState(new FilterTables());
             string = "" + numOfQuestion;

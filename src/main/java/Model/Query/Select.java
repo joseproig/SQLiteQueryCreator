@@ -3,6 +3,8 @@ package Model.Query;
 import Model.Columna;
 import Model.TablesData;
 import Model.Taula;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,20 +12,28 @@ import java.util.List;
 import java.util.Map;
 
 public class Select implements Cloneable{
-    private HashMap<String, ColumnaResult> columnaResult;
-    private From from;
-    private Where where;
-    private Order order;
-    private List<String> questions;
     private List<String> logosQuestions;
     private List<String> eqsplainQuestions;
     private List<String> templateQuestions;
+    private String textOfQuery;
+    private String answer;
+
+    @JsonIgnore
+    private List<String> questions;
+    @JsonIgnore
+    private HashMap<String, ColumnaResult> columnaResult;
+    @JsonIgnore
+    private From from;
+    @JsonIgnore
+    private Where where;
+    @JsonIgnore
+    private Order order;
+    @JsonIgnore
     public static final String LOGOS = "Logos";
+    @JsonIgnore
     public static final String EQSPLAIN = "EqsPlain";
+    @JsonIgnore
     public static final String TEMPLATE = "Template";
-
-
-
 
 
     public Select(HashMap<String, ColumnaResult> columnaResult, From from) {
@@ -227,5 +237,41 @@ public class Select implements Cloneable{
 
         questionsString.append("</ul>");
         return questionsString.toString();
+    }
+
+    public String getTextOfQuery() {
+        return this.toString();
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
+
+    public List<String> getLogosQuestions() {
+        return logosQuestions;
+    }
+
+    public void setLogosQuestions(List<String> logosQuestions) {
+        this.logosQuestions = logosQuestions;
+    }
+
+    public List<String> getEqsplainQuestions() {
+        return eqsplainQuestions;
+    }
+
+    public void setEqsplainQuestions(List<String> eqsplainQuestions) {
+        this.eqsplainQuestions = eqsplainQuestions;
+    }
+
+    public List<String> getTemplateQuestions() {
+        return templateQuestions;
+    }
+
+    public void setTemplateQuestions(List<String> templateQuestions) {
+        this.templateQuestions = templateQuestions;
     }
 }

@@ -1,6 +1,5 @@
 {
   "dbPath": "/Users/joseproigtorres/Desktop/TFG_Data/AC3.db",
-  "mysqlConverterPath": "/Users/joseproigtorres/Library/Python/3.8/bin",
   "filterParams": {
     "questions": [
       {

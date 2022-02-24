@@ -30,16 +30,16 @@ public class InitializeState extends State {
     private HashMap <String, Taula> getTaules (HashMap<Integer,Taula> taulesById, int numOfQuestion) {
         try {
             Gson gson = new Gson();
-            BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
-            ProgramConfig programConfig = gson.fromJson(br, ProgramConfig.class);
+            //BufferedReader br = new BufferedReader(new FileReader(JSON_PATH));
+            //ProgramConfig programConfig = gson.fromJson(br, ProgramConfig.class);
             BufferedReader br2 = new BufferedReader(new FileReader(JSON_PATH_2));
             MysqlConfig mysqlConfig = gson.fromJson(br2, MysqlConfig.class);
-            ProgramConfig.setInstance(programConfig);
+            //ProgramConfig.setInstance(programConfig);
             MysqlConfig.setInstance(mysqlConfig);
             //Guardem els parametres que ha de tenir la pregunta
             takeParametersOfQuestion();
 
-            HashMap <String, Taula> taules = DBConnection.getInstance(programConfig.getDbPath()).showTables(taulesById);
+            HashMap <String, Taula> taules = DBConnection.getInstance(ProgramConfig.getInstance().getDbPath()).showTables(taulesById);
             //Conexió a la BBDD de mysql, es necessari per tal de poder-se conectar-se a Logos més tard.
 
             try {
@@ -48,7 +48,7 @@ public class InitializeState extends State {
                 //MySQLConnector.getInstance().updateLogosTables (DBConnection.getInstance(null).getDatabaseName(), taules);
 
                 ProcessBuilder builder = new ProcessBuilder("bash", "-c","./sqlite3mysql -f " + ProgramConfig.getInstance().getDbPath() + " -d " + DBConnection.getInstance(null).getDatabaseName() + " -u " + mysqlConfig.getMysql_user() + " --mysql-password " + mysqlConfig.getMysql_passwd());
-                builder.directory(new File(ProgramConfig.getInstance().getMysqlConverterPath()));
+                builder.directory(new File(MysqlConfig.getInstance().getMysqlConverterPath()));
                 builder.redirectErrorStream(true);
                 Process p2 = builder.start();
 

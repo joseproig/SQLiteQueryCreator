@@ -6,6 +6,7 @@ public class MysqlConfig {
     private static MysqlConfig instance;
     private String mysql_user;
     private String mysql_passwd;
+    private String mysqlConverterPath;
 
     public static MysqlConfig getInstance() {
         if (instance == null) {
@@ -32,5 +33,13 @@ public class MysqlConfig {
 
     public void setMysql_passwd(String mysql_passwd) {
         this.mysql_passwd = mysql_passwd;
+    }
+
+    public String getMysqlConverterPath() {
+        return mysqlConverterPath;
+    }
+
+    public void setMysqlConverterPath(String mysqlConverterPath) {
+        this.mysqlConverterPath = mysqlConverterPath;
     }
 }

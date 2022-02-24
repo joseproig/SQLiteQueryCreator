@@ -7,6 +7,7 @@ import Model.ProgramConfig;
 import Model.Query.Select;
 import Model.TablesData;
 import Utils.Base64Encode;
+import Utils.SQLLiteUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,24 +24,8 @@ public class GenerateXML extends State {
         for (Question question : ProgramConfig.getInstance().getFilterParams().getQuestions()) {
             if (TablesData.getInstance().getPossibleQueries().get(numQuestion-1).size() > 0) {
                 for(Select selectToAddInXML : TablesData.getInstance().getPossibleQueries().get(numQuestion-1)) {
-                    //ProcessBuilder builder = new ProcessBuilder("sqlite3", ".open " + DBConnection.getInstance("").getPathFile(),".mode column",TablesData.getInstance().getPossibleQueries().get(numQuestion-1).get(0).toString());
-                    StringBuilder answer = new StringBuilder("");
-                    //Hem de ficar la width minima de 10 en les columnes que es vaiguin a mostrar
-                    StringBuilder widthCommand = new StringBuilder(".width");
-                    for (String var:selectToAddInXML.getColumnaResult().keySet()) {
-                        widthCommand.append(" 10");
-                    }
-                    ProcessBuilder builder = new ProcessBuilder("sqlite3", "", ".open " + DBConnection.getInstance("").getPathFile(), ".mode column",widthCommand.toString(), selectToAddInXML.toString() + ";", ".exit");
-
-                    builder.redirectErrorStream(true);
-                    Process p = builder.start();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    String line = "";
-                    while ((line = reader.readLine()) != null) {
-                        answer.append(line).append("\n");
-                    }
-                    p.destroy();
+                    String answer = SQLLiteUtils.getSolutionForOneSelect(selectToAddInXML);
+                    selectToAddInXML.setAnswer(answer);
                     eStudyXML.addQuestion("Pregunta " + numQuestionInEstudy, selectToAddInXML.printAllQuestions(), selectToAddInXML.toString(), answer.toString(), Base64Encode.encodeFileToBase64Binary(DBConnection.getInstance("").getPathFile()));
                     numQuestionInEstudy++;
                 }
