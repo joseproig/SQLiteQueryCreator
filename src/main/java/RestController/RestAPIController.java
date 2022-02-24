@@ -21,7 +21,7 @@ import java.io.*;
 
 @RestController
 public class RestAPIController {
-    @GetMapping (value = "/getXMLOfQuestions")
+    @GetMapping (value = "/getPossibilities")
     public Solution createPerson(@RequestParam("config") String programConfigString, @RequestParam("file") MultipartFile file) {
         Gson g = new Gson();
         ProgramConfig programConfig = g.fromJson(programConfigString, ProgramConfig.class);
