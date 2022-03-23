@@ -418,7 +418,7 @@ public class MakeFromState extends State{
     private void generateTextForAResult (Select select, HashMap<String,List<HashMap<String, Columna>>> possibleOrganizationForOneQuestion, List<Integer> indexes, List<String> indexesString, int idQuestion, List<Select> results) {
         select.addQuestion(generateTextForSolution (possibleOrganizationForOneQuestion, indexes, indexesString, idQuestion,select), Select.TEMPLATE);
         if(!ProgramConfig.getInstance().getFilterParams().getQuestions().get(idQuestion).isDeactivateEQSPlain()) {
-            int LIMIT_OF_QUESTIONS_EQSPLAIN = 10;
+            int LIMIT_OF_QUESTIONS_EQSPLAIN = 100;
             if (results.size() < LIMIT_OF_QUESTIONS_EQSPLAIN) {
                 List<String> responseFromEQSPlain = callEQSPlainToGenerateMoreTextsForSolution(select);
                 if (responseFromEQSPlain != null) {

@@ -19,6 +19,10 @@ public class Solution {
         return instance;
     }
 
+    public static void setInstance(Solution instance) {
+        Solution.instance = instance;
+    }
+
     public List<List<Select>> getPossibleQueries() {
         return possibleQueries;
     }

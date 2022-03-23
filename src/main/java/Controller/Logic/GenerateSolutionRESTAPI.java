@@ -30,5 +30,7 @@ public class GenerateSolutionRESTAPI extends State {
             numQuestion++;
         }
         Solution.getInstance().setPossibleQueries(TablesData.getInstance().getPossibleQueries());
+        context.changeState(new GenerateCSV());
+        context.doStateFunction("");
     }
 }

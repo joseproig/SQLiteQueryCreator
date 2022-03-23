@@ -6,6 +6,7 @@ import Controller.Logic.InitializeState;
 import Model.ProgramConfig;
 import Model.Query.Select;
 import Model.RestAPI.Solution;
+import Model.TablesData;
 import Utils.SQLLiteUtils;
 import com.google.gson.Gson;
 
@@ -26,6 +27,10 @@ public class RestAPIController {
         System.out.println("________________________________________________________");
         System.out.println(programConfigString);
         Gson g = new Gson();
+        DBConnection.setInstance(null);
+        ProgramConfig.setInstance(null);
+        TablesData.setInstance(null);
+        Solution.setInstance(null);
         ProgramConfig programConfig = g.fromJson(programConfigString, ProgramConfig.class);
         ProgramConfig.setInstance(programConfig);
         try {
@@ -37,7 +42,6 @@ public class RestAPIController {
             Context context = new Context(new InitializeState());
             context.doStateFunction("0");
             SQLLiteUtils.deleteFileLocally(TARGET_DB);
-            DBConnection.setInstance(null);
         } catch (IOException e) {
             e.printStackTrace();
         }
