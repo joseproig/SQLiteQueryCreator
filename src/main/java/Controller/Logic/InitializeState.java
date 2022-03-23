@@ -13,8 +13,10 @@ import Model.ParametersOfQuestion.SelectFolder.ColumnInSelect;
 import Model.ParametersOfQuestion.Structure;
 import Utils.Algorithms.FloydWarshall;
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,12 +48,11 @@ public class InitializeState extends State {
                 MySQLConnector.getInstance().deleteDatabasecreateNewDatabase(DBConnection.getInstance(null).getDatabaseName());
                 MySQLConnector.getInstance().createNecessaryTablesForLogos(DBConnection.getInstance(null).getDatabaseName());
                 //MySQLConnector.getInstance().updateLogosTables (DBConnection.getInstance(null).getDatabaseName(), taules);
-
-                ProcessBuilder builder = new ProcessBuilder("bash", "-c","./sqlite3mysql -f " + ProgramConfig.getInstance().getDbPath() + " -d " + DBConnection.getInstance(null).getDatabaseName() + " -u " + mysqlConfig.getMysql_user() + " --mysql-password " + mysqlConfig.getMysql_passwd());
+                Path currentWorkingDir = Paths.get("").toAbsolutePath();
+                ProcessBuilder builder = new ProcessBuilder("bash", "-c","./sqlite3mysql -f " + currentWorkingDir.normalize().toString() + "/" + ProgramConfig.getInstance().getDbPath() + " -d " + DBConnection.getInstance(null).getDatabaseName() + " -u " + mysqlConfig.getMysql_user() + " --mysql-password " + mysqlConfig.getMysql_passwd());
                 builder.directory(new File(MysqlConfig.getInstance().getMysqlConverterPath()));
                 builder.redirectErrorStream(true);
                 Process p2 = builder.start();
-
 
             } catch (Exception e) {
                 e.printStackTrace();

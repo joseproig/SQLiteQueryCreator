@@ -43,6 +43,11 @@ public class DBConnection {
         this.databaseName = databaseName;
     }
 
+
+    public static void setInstance(DBConnection instance) {
+        DBConnection.instance = instance;
+    }
+
     public static DBConnection getInstance(String pathFile) {
         if (instance == null) {
             instance = new DBConnection(pathFile);

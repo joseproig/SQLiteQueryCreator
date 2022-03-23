@@ -47,6 +47,12 @@ public class SQLLiteUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public static void deleteFileLocally (String outputFile) {
+        File myObj = new File(outputFile);
+        if (myObj.delete()) {
+            System.out.println("Deleted the file: " + myObj.getName());
+        }
     }
 }

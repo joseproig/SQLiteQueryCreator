@@ -78,7 +78,7 @@ public class MakeFromState extends State{
 
         int numOfQuestion = Integer.parseInt(string) + 1;
         if (numOfQuestion == ProgramConfig.getInstance().getFilterParams().getQuestions().size()) {
-            MySQLConnector.getInstance().close();
+            //MySQLConnector.getInstance().close();
             context.changeState(new GenerateSolutionRESTAPI());
         } else {
             context.changeState(new FilterTables());
@@ -917,7 +917,7 @@ public class MakeFromState extends State{
             String username = MysqlConfig.getInstance().getMysql_user();
             String password = MysqlConfig.getInstance().getMysql_passwd();
             String dbType = "MySQL"; // or MySQL
-            String[] dbSchemas = {"AC3"};
+            String[] dbSchemas = {DBConnection.getInstance(null).getDatabaseName()};
 
             String question = null;
             try {
