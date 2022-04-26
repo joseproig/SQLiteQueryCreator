@@ -60,4 +60,6 @@ public class Question {
     public void setDeactivateEQSPlain(boolean deactivateEQSPlain) {
         this.deactivateEQSPlain = deactivateEQSPlain;
     }
+
+
 }

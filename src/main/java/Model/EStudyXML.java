@@ -175,11 +175,13 @@ public class EStudyXML {
         elementDestiny.addContent(newElement);
     }
 
-    public void exportToFile () throws IOException {
+    public String exportToFile () throws IOException {
         document.setRootElement(root);
         XMLOutputter outter=new XMLOutputter();
         outter.setFormat(Format.getPrettyFormat());
-        outter.output(document, new FileWriter(new File("/Users/joseproigtorres/Desktop/TFG_BBDD/src/fileUtils/estudy.xml")));
+        String path = "/Users/joseproigtorres/Desktop/TFG_BBDD/src/fileUtils/estudy" + System.currentTimeMillis() + ".xml";
+        outter.output(document, new FileWriter(new File(path)));
+        return path;
     }
 }
 
