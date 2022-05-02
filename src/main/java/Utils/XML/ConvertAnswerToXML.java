@@ -17,9 +17,11 @@ import java.util.List;
 
 public class ConvertAnswerToXML {
     private TemplateQuestion question;
+    private String schema;
 
-    public ConvertAnswerToXML(TemplateQuestion question) {
+    public ConvertAnswerToXML(TemplateQuestion question, String schema) {
         this.question = question;
+        this.schema = schema;
     }
 
     public String convert () {
@@ -30,7 +32,7 @@ public class ConvertAnswerToXML {
             if (question.getAnswers().size() > 0) {
                 for(Answer answerToAdd : question.getAnswers()) {
                     if (answerToAdd.isSelected()) {
-                        eStudyXML.addQuestion("Pregunta " + question.getId() + " - Alternativa " + numQuestionInEstudy, answerToAdd.getStatement(), answerToAdd.getQuery(), answerToAdd.getAnswer(), Base64Encode.encodeFileToBase64Binary(question.getProject().getPathToDbFile()));
+                        eStudyXML.addQuestion("Pregunta " + question.getId() + " - Alternativa " + numQuestionInEstudy,  answerToAdd.getStatement() + schema + "\n", answerToAdd.getQuery(), answerToAdd.getAnswer(), Base64Encode.encodeFileToBase64Binary(question.getProject().getPathToDbFile()));
                         numQuestionInEstudy++;
                     }
                 }
