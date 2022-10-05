@@ -69,6 +69,7 @@ symfony server:start
 ### Puertos 📌
 
 Para ver la página web: 8080
+
 Para comunicarse con la parte de BackEnd: 8086
 (Es importante ejecutar las dos partes en el mismo sistema)
 
