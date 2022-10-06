@@ -53,6 +53,40 @@ Seguidamente, tenemos que hacer un **checkout** de este repositorio hacia la bra
 git checkout dev
 ```
 
+Seguidamente hay que crear un fichero .env en la carpeta principal del proyecto con el siguiente contenido (sustituyendo los campos de <mysql_user> y <mysql_passwd>):
+
+```
+# In all environments, the following files are loaded if they exist,
+# the latter taking precedence over the former:
+#
+#  * .env                contains default values for the environment variables needed by the app
+#  * .env.local          uncommitted file with local overrides
+#  * .env.$APP_ENV       committed environment-specific defaults
+#  * .env.$APP_ENV.local uncommitted environment-specific overrides
+#
+# Real environment variables win over .env files.
+#
+# DO NOT DEFINE PRODUCTION SECRETS IN THIS FILE NOR IN ANY OTHER COMMITTED FILES.
+#
+# Run "composer dump-env prod" to compile .env files for production use (requires symfony/flex >=1.2).
+# https://symfony.com/doc/current/best_practices.html#use-environment-variables-for-infrastructure-configuration
+
+###> symfony/framework-bundle ###
+APP_ENV=dev
+APP_SECRET=a7f97cc9b722853baaea7d295ae70284
+###< symfony/framework-bundle ###
+
+###> doctrine/doctrine-bundle ###
+# Format described at https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url
+# IMPORTANT: You MUST configure your server version, either here or in config/packages/doctrine.yaml
+#
+# DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
+DATABASE_URL="mysql://<mysql_user>:<mysql_passwd>@127.0.0.1:3306/querygenerator?serverVersion=8.0&charset=utf8mb4"
+# DATABASE_URL="postgresql://symfony:ChangeMe@127.0.0.1:5432/app?serverVersion=13&charset=utf8"
+###< doctrine/doctrine-bundle ###
+DEFAULT_PASSWORD="elCarbassotFaElQuePot*2021/2022"
+```
+
 Posteriormente, ya podemos compilar los diferentes archivos de JS y CSS, juntamente con los archivos de Tailwind
 
 ```
@@ -66,6 +100,7 @@ Finalmente, ya podremos ejecutar el servidor de Symfony
 symfony server:start
 ```
 
+
 ### Puertos 📌
 
 Para ver la página web: 8080
@@ -73,4 +108,12 @@ Para ver la página web: 8080
 Para comunicarse con la parte de BackEnd: 8086
 (Es importante ejecutar las dos partes en el mismo sistema)
 
+### Utils 🤓
+
+La contraseña del servicio web es (tal y como se especifica en el .env): elCarbassotFaElQuePot*2021/2022
+
+
+### Help 🥺
+
+Por cualquier tipo de duda contactar con: joseproig1999@gmail.com
 
